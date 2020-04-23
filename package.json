@@ -1,0 +1,13 @@
+{
+  "name": "netlify-functions-boilerplate",
+  "version": "1.0.0",
+  "author": "Kerstin Huppenbauer",
+  "license": "MIT",
+  "scripts": {
+    "dev": "netlify-lambda serve functions",
+    "build": "netlify-lambda build functions"
+  },
+  "dependencies": {
+    "netlify-lambda": "^1.6.3"
+  }
+}
