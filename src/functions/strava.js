@@ -32,27 +32,36 @@ exports.handler = async (event, context) => {
       }
     }
   } else if (event.httpMethod === 'POST') {
-    const webHook = {
-      _id: mongoose.Types.ObjectId(),
-      provider: 'Strava',
-      status: 'new',
-      task: 'STRAVA_ACTIVITY_CREATED',
-      path: event.path,
-      httpMethod: event.httpMethod,
-      headers: event.headers,
-      queryStringParameters: event.queryStringParameters,
-      body: JSON.parse(event.body)
-    };
-    console.log(webHook);
+    try {
+      const webHook = {
+        _id: mongoose.Types.ObjectId(),
+        provider: 'Strava',
+        status: 'new',
+        task: 'STRAVA_ACTIVITY_CREATED',
+        path: event.path,
+        httpMethod: event.httpMethod,
+        headers: event.headers,
+        queryStringParameters: event.queryStringParameters,
+        body: JSON.parse(event.body)
+      };
+      console.log(webHook);
 
-    // Use WebHook to create a new record
-    await WebHook.create(webHook);
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(webHook)
+      // Use WebHook to create a new record
+      await WebHook.create(webHook);
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(webHook)
+      }
+    } catch (err) {
+      console.log('webHook.create', err)
+      // output to netlify function log
+      return {
+        statusCode: 500,
+        body: JSON.stringify({msg: err.message})
+      }
     }
   } else {
     return {
