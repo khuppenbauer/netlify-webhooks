@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
     // Use WebHook to create a new record
     await WebHook.create(webHook);
     return {
-      statusCode: 201,
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json'
       },
