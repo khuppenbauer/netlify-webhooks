@@ -1,2 +1,2 @@
-# netlify-functions-boilerplate
-Boilerplate package for netlify functions
+# netlify-webhooks
+Handle Webhooks from external Apps and store the data in a MongoDB which can be used as MessageQueue

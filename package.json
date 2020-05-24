@@ -4,10 +4,11 @@
   "author": "Kerstin Huppenbauer",
   "license": "MIT",
   "scripts": {
-    "dev": "netlify-lambda serve functions",
-    "build": "netlify-lambda build functions"
+    "dev": "netlify-lambda serve src/functions",
+    "build": "netlify-lambda build src/functions"
   },
   "dependencies": {
-    "netlify-lambda": "^1.6.3"
+    "netlify-lambda": "^1.6.3",
+    "mongoose": "^5.9.15"
   }
 }

@@ -1,4 +1,6 @@
 node_modules
 functions-build
+.env.development
+.env.production
 .netlify
 .idea
