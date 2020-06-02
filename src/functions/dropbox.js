@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import db from '../mongodb'
-import WebHook from '../webHook'
+import WebHook from '../models/webHook'
+import { headers } from '../lib/utilities'
 
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {
@@ -23,7 +24,7 @@ exports.handler = async (event, context) => {
         task: 'FILES_CHANGED',
         path: event.path,
         httpMethod: event.httpMethod,
-        headers: event.headers,
+        headers: headers(event.headers),
         queryStringParameters: event.queryStringParameters,
         body: JSON.parse(event.body)
       };
