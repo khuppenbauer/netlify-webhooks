@@ -5,18 +5,23 @@ const Message = require('../../models/message');
 module.exports = async (event, context) => {
   let result;
   try {
-    // Use Product.Model to delete
     result = await Message.find();
   } catch(err) {
     return {
       statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        msg: err.message
+        message: err.message
       })
     }
   }
   return {
     statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(result)
   }
 };

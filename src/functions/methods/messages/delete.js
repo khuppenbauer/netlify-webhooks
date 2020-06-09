@@ -5,13 +5,15 @@ const Message = require('../../models/message');
 module.exports = async (event, context) => {
   const { id } = event;
   try {
-    // Use Product.Model to delete
     await Message.findByIdAndRemove(id);
   } catch(err) {
     return {
-      statusCode: 400,
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        msg: err.message
+        message: err.message
       })
     }
   }

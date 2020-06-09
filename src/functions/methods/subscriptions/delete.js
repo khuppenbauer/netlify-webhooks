@@ -5,13 +5,15 @@ const Subscription = require('../../models/subscription');
 module.exports = async (event, context) => {
   const { id } = event;
   try {
-    // Use Product.Model to delete
     await Subscription.findByIdAndRemove(id);
   } catch(err) {
     return {
       statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
-        msg: err.message
+        message: err.message
       })
     }
   }

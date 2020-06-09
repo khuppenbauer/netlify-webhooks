@@ -4,21 +4,18 @@ const Message = require('../../models/message');
 
 module.exports = async (event, context) => {
   const { id, body } = event;
-  const subscription = JSON.parse(body);
-  let result;
+  const message = JSON.parse(body);
   try {
-    result = await Message.findByIdAndUpdate(id, subscription)
+    await Message.findByIdAndUpdate(id, message)
   } catch (err) {
-    const error = {...data,
-      status: 'error',
-      message: err.message
-    };
     return {
-      statusCode: 400,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(error)
+      body: JSON.stringify({
+        message: err.message
+      })
     }
   }
   return {
@@ -26,6 +23,6 @@ module.exports = async (event, context) => {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(result)
+    body: JSON.stringify(message)
   }
 };

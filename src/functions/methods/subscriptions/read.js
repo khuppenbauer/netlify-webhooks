@@ -8,16 +8,14 @@ module.exports = async (event, context) => {
   try {
     result = await Subscription.findById(id)
   } catch (err) {
-    const error = {...data,
-      status: 'error',
-      message: err.message
-    };
     return {
-      statusCode: 400,
+      statusCode: 500,
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(error)
+      body: JSON.stringify({
+        message: err.message
+      })
     }
   }
   return {
