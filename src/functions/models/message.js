@@ -1,5 +1,5 @@
-// webHook.js
-import mongoose from 'mongoose'
+// message.js
+const mongoose = require('mongoose');
 
 const schemaOptions = {
   timestamps: true,
@@ -7,14 +7,20 @@ const schemaOptions = {
 // Set Product Schema
 const schema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
-  provider: {
+  app: {
+    type: String
+  },
+  event: {
+    type: String
+  },
+  id: {
     type: String
   },
   status: {
     type: String
   },
-  task: {
-    type: String
+  message: {
+    type: Object
   },
   path: {
     type: String
@@ -33,6 +39,6 @@ const schema = new mongoose.Schema({
   }
 
 }, schemaOptions),
-WebHook = mongoose.model('webHook', schema)
+Message = mongoose.model('message', schema);
 
-export default WebHook
+module.exports = Message;

@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
-const Subscription = require('../../models/subscription');
+const Message = require('../../models/message');
 
 module.exports = async (event, context) => {
   const { id } = event;
   try {
     // Use Product.Model to delete
-    await Subscription.findByIdAndRemove(id);
+    await Message.findByIdAndRemove(id);
   } catch(err) {
     return {
-      statusCode: 500,
+      statusCode: 400,
       body: JSON.stringify({
         msg: err.message
       })

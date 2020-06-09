@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
-const Subscription = require('../../models/subscription');
+const Message = require('../../models/message');
 
 module.exports = async (event, context) => {
-  const data = JSON.parse(event.body);
-  const subscription = {...data,
-    _id: mongoose.Types.ObjectId(),
-  };
+  const { id } = event;
+  let result;
   try {
-    await Subscription.create(subscription);
+    result = await Message.findById(id)
   } catch (err) {
     const error = {...data,
       status: 'error',
@@ -23,10 +21,10 @@ module.exports = async (event, context) => {
     }
   }
   return {
-    statusCode: 201,
+    statusCode: 200,
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(subscription)
+    body: JSON.stringify(result)
   }
 };

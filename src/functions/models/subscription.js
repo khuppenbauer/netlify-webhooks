@@ -1,5 +1,5 @@
 // subscription.js
-import mongoose from 'mongoose'
+const mongoose = require('mongoose');
 
 const schemaOptions = {
   timestamps: true,
@@ -17,6 +17,6 @@ const schema = new mongoose.Schema({
     type: String
   }
 }, schemaOptions),
-Subscription = mongoose.model('subscription', schema)
+Subscription = mongoose.model('subscription', schema);
 
-export default Subscription
+module.exports = Subscription;

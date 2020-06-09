@@ -1,7 +1,4 @@
-import mongoose from 'mongoose'
-import db from '../mongodb'
-import WebHook from '../models/webHook'
-import { headers } from '../lib/utilities'
+const messages = require('./methods/messages');
 
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {
@@ -33,37 +30,11 @@ exports.handler = async (event, context) => {
       }
     }
   } else if (event.httpMethod === 'POST') {
-    try {
-      const webHook = {
-        _id: mongoose.Types.ObjectId(),
-        provider: 'Strava',
-        status: 'new',
-        task: 'STRAVA_ACTIVITY_CREATED',
-        path: event.path,
-        httpMethod: event.httpMethod,
-        headers: headers(event.headers),
-        queryStringParameters: event.queryStringParameters,
-        body: JSON.parse(event.body)
-      };
-      console.log(webHook);
-
-      // Use WebHook to create a new record
-      await WebHook.create(webHook);
-      return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(webHook)
-      }
-    } catch (err) {
-      console.log('webHook.create', err)
-      // output to netlify function log
-      return {
-        statusCode: 500,
-        body: JSON.stringify({msg: err.message})
-      }
-    }
+    context.callbackWaitsForEmptyEventLoop = false;
+    const data = JSON.parse(event.body);
+    const { object_id, aspect_type, object_type } = data;
+    const app = 'strava';
+    return messages.create(event, context, {id: object_id, app, event: `${aspect_type}_${object_type}`});
   } else {
     return {
       statusCode: 405,

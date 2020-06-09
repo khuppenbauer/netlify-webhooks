@@ -1,4 +1,4 @@
-const subscriptions = require('./methods/subscriptions');
+const messages = require('./methods/messages');
 
 exports.handler = async (event, context) => {
   const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '');
@@ -6,43 +6,43 @@ exports.handler = async (event, context) => {
   console.log([path, segments]);
   switch (event.httpMethod) {
     case 'GET':
-      /* GET /.netlify/functions/subscriptions */
+      /* GET /.netlify/functions/messages */
       if (segments.length === 0) {
-        return subscriptions.list(event, context);
+        return messages.list(event, context);
       }
-      /* GET /.netlify/functions/subscriptions/123456 */
+      /* GET /.netlify/functions/messages/123456 */
       if (segments.length === 1) {
         event.id = segments[0];
-        return subscriptions.read(event, context);
+        return messages.read(event, context);
       } else {
         return {
           statusCode: 500,
           body: 'too many segments in GET request'
         }
       }
-      /* POST /.netlify/functions/subscriptions */
+      /* POST /.netlify/functions/messages */
     case 'POST':
-      return subscriptions.create(event, context);
-      /* PUT /.netlify/functions/subscriptions/123456 */
+      return messages.create(event, context);
+      /* PUT /.netlify/functions/messages/123456 */
     case 'PUT':
       if (segments.length === 1) {
         event.id = segments[0];
-        return subscriptions.update(event, context);
+        return messages.update(event, context);
       } else {
         return {
           statusCode: 500,
-          body: 'invalid segments in POST request, must be /.netlify/functions/subscriptions/123456'
+          body: 'invalid segments in POST request, must be /.netlify/functions/messages/123456'
         }
       }
-      /* DELETE /.netlify/functions/subscriptions/123456 */
+      /* DELETE /.netlify/functions/messages/123456 */
     case 'DELETE':
       if (segments.length === 1) {
         event.id = segments[0];
-        return subscriptions.delete(event, context);
+        return messages.delete(event, context);
       } else {
         return {
           statusCode: 500,
-          body: 'invalid segments in DELETE request, must be /.netlify/functions/subscriptions/123456'
+          body: 'invalid segments in DELETE request, must be /.netlify/functions/messages/123456'
         }
       }
       /* Fallthrough case */
