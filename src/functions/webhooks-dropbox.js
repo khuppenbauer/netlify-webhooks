@@ -1,4 +1,5 @@
 const messages = require('./methods/messages');
+const dotenv = require('dotenv').config()
 
 exports.handler = async (event, context) => {
   if (event.httpMethod === 'GET') {

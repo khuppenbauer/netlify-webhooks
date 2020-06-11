@@ -9,7 +9,7 @@ module.exports = async (event, context) => {
     result = await Message.findById(id)
   } catch (err) {
     return {
-      statusCode: 500,
+      statusCode: 400,
       headers: {
         'Content-Type': 'application/json'
       },

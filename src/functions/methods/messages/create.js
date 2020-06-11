@@ -31,7 +31,7 @@ module.exports = async (event, context, data) => {
     };
     await Message.create(error);
     return {
-      statusCode: 500,
+      statusCode: 400,
       headers: {
         'Content-Type': 'application/json'
       },

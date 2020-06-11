@@ -8,7 +8,7 @@ module.exports = async (event, context) => {
     result = await Subscription.find();
   } catch(err) {
     return {
-      statusCode: 500,
+      statusCode: 400,
       headers: {
         'Content-Type': 'application/json'
       },

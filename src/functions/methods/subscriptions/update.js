@@ -9,7 +9,7 @@ module.exports = async (event, context) => {
     await Subscription.findByIdAndUpdate(id, subscription)
   } catch (err) {
     return {
-      statusCode: 500,
+      statusCode: 400,
       headers: {
         'Content-Type': 'application/json'
       },

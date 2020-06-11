@@ -1,9 +1,8 @@
 const subscriptions = require('./methods/subscriptions');
 
 exports.handler = async (event, context) => {
-  const path = event.path.replace(/\.netlify\/functions\/[^/]+/, '');
+  const path = event.path.replace(/(\.netlify\/functions\/)?[^/]+/, '');
   const segments = path.split('/').filter(e => e);
-  console.log([path, segments]);
   switch (event.httpMethod) {
     case 'GET':
       /* GET /.netlify/functions/subscriptions */

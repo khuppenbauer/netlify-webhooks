@@ -1,12 +1,14 @@
 // mongodb.js
 const mongoose = require('mongoose');
+const dotenv = require('dotenv').config();
 
 // Initialize connection to database
 const DB_URL = process.env.MONGO_DB_URL;
-const DB_NAME = process.env.MONGO_DB_NAME || 'MessageQueue';
+const DB_NAME = process.env.MONGO_DB_NAME;
 const DB_OPTIONS = {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  useFindAndModify: false
 };
 
 // Set DB from mongoose connection
