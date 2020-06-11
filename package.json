@@ -9,9 +9,10 @@
     "lint": "yarn run eslint src/*"
   },
   "dependencies": {
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
     "mongoose": "^5.9.15",
-    "netlify-lambda": "^1.6.3",
-    "dotenv": "^8.2.0"
+    "netlify-lambda": "^1.6.3"
   },
   "devDependencies": {
     "eslint": "^7.2.0",
