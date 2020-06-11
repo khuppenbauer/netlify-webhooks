@@ -5,13 +5,17 @@
   "license": "MIT",
   "scripts": {
     "dev": "netlify-lambda serve src/functions",
-    "build": "netlify-lambda build src/functions"
+    "build": "netlify-lambda build src/functions",
+    "lint": "yarn run eslint src/*"
   },
   "dependencies": {
     "mongoose": "^5.9.15",
-    "netlify-lambda": "^1.6.3"
+    "netlify-lambda": "^1.6.3",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0"
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.21.2"
   }
 }

@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Subscription = require('../../models/subscription');
 
-module.exports = async (event, context) => {
+module.exports = async (event) => {
   const data = JSON.parse(event.body);
-  const subscription = {...data,
+  const subscription = {
+    ...data,
     _id: mongoose.Types.ObjectId(),
   };
   try {
@@ -13,18 +14,18 @@ module.exports = async (event, context) => {
     return {
       statusCode: 400,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: err.message
-      })
-    }
+        message: err.message,
+      }),
+    };
   }
   return {
     statusCode: 201,
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(subscription)
-  }
+    body: JSON.stringify(subscription),
+  };
 };

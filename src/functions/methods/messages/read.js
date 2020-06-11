@@ -2,27 +2,26 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Message = require('../../models/message');
 
-module.exports = async (event, context) => {
-  const { id } = event;
+module.exports = async (event, id) => {
   let result;
   try {
-    result = await Message.findById(id)
+    result = await Message.findById(id);
   } catch (err) {
     return {
       statusCode: 400,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: err.message
-      })
-    }
+        message: err.message,
+      }),
+    };
   }
   return {
     statusCode: 200,
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(result)
-  }
+    body: JSON.stringify(result),
+  };
 };

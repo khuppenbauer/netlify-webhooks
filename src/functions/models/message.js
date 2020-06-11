@@ -8,37 +8,37 @@ const schemaOptions = {
 const schema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   app: {
-    type: String
+    type: String,
   },
   event: {
-    type: String
+    type: String,
   },
   id: {
-    type: String
+    type: String,
   },
   status: {
-    type: String
+    type: String,
   },
   message: {
-    type: Object
+    type: Object,
   },
   path: {
-    type: String
+    type: String,
   },
   httpMethod: {
-    type: String
+    type: String,
   },
   headers: {
-    type: Object
+    type: Object,
   },
   queryStringParameters: {
-    type: Object
+    type: Object,
   },
   body: {
-    type: Object
-  }
+    type: Object,
+  },
 
-}, schemaOptions),
-Message = mongoose.model('message', schema);
+}, schemaOptions);
+const Message = mongoose.model('message', schema);
 
 module.exports = Message;

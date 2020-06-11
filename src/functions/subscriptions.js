@@ -1,54 +1,51 @@
 const subscriptions = require('./methods/subscriptions');
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   const path = event.path.replace(/(\.netlify\/functions\/)?[^/]+/, '');
-  const segments = path.split('/').filter(e => e);
+  const segments = path.split('/').filter((e) => e);
   switch (event.httpMethod) {
     case 'GET':
       /* GET /.netlify/functions/subscriptions */
       if (segments.length === 0) {
-        return subscriptions.list(event, context);
+        return subscriptions.list(event);
       }
       /* GET /.netlify/functions/subscriptions/123456 */
       if (segments.length === 1) {
-        event.id = segments[0];
-        return subscriptions.read(event, context);
-      } else {
-        return {
-          statusCode: 500,
-          body: 'too many segments in GET request'
-        }
+        return subscriptions.read(event, segments[0]);
       }
+      return {
+        statusCode: 500,
+        body: 'too many segments in GET request',
+      };
+
       /* POST /.netlify/functions/subscriptions */
     case 'POST':
-      return subscriptions.create(event, context);
+      return subscriptions.create(event);
       /* PUT /.netlify/functions/subscriptions/123456 */
     case 'PUT':
       if (segments.length === 1) {
-        event.id = segments[0];
-        return subscriptions.update(event, context);
-      } else {
-        return {
-          statusCode: 500,
-          body: 'invalid segments in POST request, must be /.netlify/functions/subscriptions/123456'
-        }
+        return subscriptions.update(event, segments[0]);
       }
+      return {
+        statusCode: 500,
+        body: 'invalid segments in POST request, must be /.netlify/functions/subscriptions/123456',
+      };
+
       /* DELETE /.netlify/functions/subscriptions/123456 */
     case 'DELETE':
       if (segments.length === 1) {
-        event.id = segments[0];
-        return subscriptions.delete(event, context);
-      } else {
-        return {
-          statusCode: 500,
-          body: 'invalid segments in DELETE request, must be /.netlify/functions/subscriptions/123456'
-        }
+        return subscriptions.delete(event, segments[0]);
       }
+      return {
+        statusCode: 500,
+        body: 'invalid segments in DELETE request, must be /.netlify/functions/subscriptions/123456',
+      };
+
       /* Fallthrough case */
     default:
       return {
         statusCode: 500,
-        body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE'
-      }
+        body: 'unrecognized HTTP Method, must be one of GET/POST/PUT/DELETE',
+      };
   }
 };

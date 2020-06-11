@@ -1,7 +1,7 @@
+const dotenv = require('dotenv').config();
 const messages = require('./methods/messages');
-const dotenv = require('dotenv').config()
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
   if (event.httpMethod === 'GET') {
     // Your verify token. Should be a random string.
     const VERIFY_TOKEN = process.env.STRAVA_VERIFY_TOKEN;
@@ -18,28 +18,30 @@ exports.handler = async (event, context) => {
         return {
           statusCode: 200,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify({"hub.challenge":challenge})
-        }
-      } else {
-        // Responds with '403 Forbidden' if verify tokens do not match
-        return {
-          statusCode: 403,
-          body: 'Forbidden'
-        }
+          body: JSON.stringify({ 'hub.challenge': challenge }),
+        };
       }
+      // Responds with '403 Forbidden' if verify tokens do not match
+      return {
+        statusCode: 403,
+        body: 'Forbidden',
+      };
     }
-  } else if (event.httpMethod === 'POST') {
-    context.callbackWaitsForEmptyEventLoop = false;
-    const data = JSON.parse(event.body);
-    const { object_id, aspect_type, object_type } = data;
-    const app = 'strava';
-    return messages.create(event, context, {id: object_id, app, event: `${aspect_type}_${object_type}`});
-  } else {
+    // Responds with '403 Forbidden' if verify tokens do not match
     return {
-      statusCode: 405,
-      body: 'Method Not Allowed'
+      statusCode: 403,
+      body: 'Forbidden',
     };
+  } if (event.httpMethod === 'POST') {
+    const data = JSON.parse(event.body);
+    const { object_id: id, aspect_type: aspectType, object_type: objectType } = data;
+    const app = 'strava';
+    return messages.create(event, { id, app, event: `${aspectType}_${objectType}` });
   }
+  return {
+    statusCode: 405,
+    body: 'Method Not Allowed',
+  };
 };

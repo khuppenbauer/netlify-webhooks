@@ -2,27 +2,27 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Subscription = require('../../models/subscription');
 
-module.exports = async (event, context) => {
-  const { id, body } = event;
+module.exports = async (event, id) => {
+  const { body } = event;
   const subscription = JSON.parse(body);
   try {
-    await Subscription.findByIdAndUpdate(id, subscription)
+    await Subscription.findByIdAndUpdate(id, subscription);
   } catch (err) {
     return {
       statusCode: 400,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        message: err.message
-      })
-    }
+        message: err.message,
+      }),
+    };
   }
   return {
     statusCode: 200,
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify(subscription)
-  }
+    body: JSON.stringify(subscription),
+  };
 };

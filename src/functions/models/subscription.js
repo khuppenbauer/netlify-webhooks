@@ -8,15 +8,15 @@ const schemaOptions = {
 const schema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
   app: {
-    type: String
+    type: String,
   },
   event: {
-    type: String
+    type: String,
   },
   url: {
-    type: String
-  }
-}, schemaOptions),
-Subscription = mongoose.model('subscription', schema);
+    type: String,
+  },
+}, schemaOptions);
+const Subscription = mongoose.model('subscription', schema);
 
 module.exports = Subscription;
