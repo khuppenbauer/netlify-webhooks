@@ -10,6 +10,16 @@ const headers = (obj) => Object.keys(obj).reduce((object, key) => {
 /* eslint-enable no-param-reassign */
 
 module.exports = async (event, data) => {
+  const existing = await Message.find(data);
+  if (existing.length > 0) {
+    return {
+      statusCode: 400,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: 'Message already exists',
+    };
+  }
   const message = {
     ...data,
     _id: mongoose.Types.ObjectId(),

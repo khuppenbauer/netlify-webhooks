@@ -22,7 +22,7 @@ const executeSubscriptions = async (subscription, data) => {
       error: err.message,
     });
   }
-  await Message.findByIdAndUpdate(data._id, { status, message });
+  return Message.findByIdAndUpdate(data._id, { status, message });
 };
 
 exports.handler = async (event) => {
@@ -31,9 +31,7 @@ exports.handler = async (event) => {
     const data = JSON.parse(fullDocument);
     const subscriptionQuery = { app: data.app, event: data.event };
     const subscriptions = await Subscription.find(subscriptionQuery);
-    subscriptions.map(subscription => {
-      executeSubscriptions(subscription, data);
-    });
+    subscriptions.map((subscription) => executeSubscriptions(subscription, data));
     return {
       statusCode: 200,
       headers: {
