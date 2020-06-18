@@ -4,19 +4,35 @@
   "author": "Kerstin Huppenbauer",
   "license": "MIT",
   "scripts": {
-    "dev": "netlify-lambda serve src/functions",
-    "build": "netlify-lambda build src/functions",
-    "lint": "yarn run eslint src/*"
+    "dev": "run-p dev:**",
+    "dev:app": "react-scripts start",
+    "dev:lambda": "netlify-lambda serve src/functions",
+    "build": "run-p build:**",
+    "build:app": "react-scripts build",
+    "build:lambda": "netlify-lambda build src/functions",
+    "lint": "yarn run eslint src/*.js"
   },
   "dependencies": {
+    "@material-ui/core": "^4.10.2",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "mongoose": "^5.9.15",
-    "netlify-lambda": "^1.6.3"
+    "netlify-lambda": "^1.6.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.13.1",
+    "react-admin": "^3.6.0",
+    "react-dom": "^16.13.1",
+    "react-scripts": "3.4.1"
   },
   "devDependencies": {
-    "eslint": "^7.2.0",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.21.2"
-  }
+    "babel-eslint": "^10.1.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "npm-run-all": "^4.1.5"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

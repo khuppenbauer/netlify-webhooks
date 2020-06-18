@@ -36,7 +36,7 @@ module.exports = async (event) => {
     headers: {
       'Access-Control-Expose-Headers': 'X-Total-Count',
       'Content-Type': 'application/json',
-      'X-Total-Count': num,
+      'X-Total-Count': num.toString(),
     },
     body: JSON.stringify(result),
   };
