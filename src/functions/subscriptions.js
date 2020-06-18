@@ -33,7 +33,7 @@ exports.handler = async (event) => {
 
       /* DELETE /.netlify/functions/subscriptions/123456 */
     case 'DELETE':
-      if (segments.length === 1) {
+      if (segments.length === 1 || event.queryStringParameters.filter) {
         return subscriptions.delete(event, segments[0]);
       }
       return {

@@ -33,7 +33,7 @@ exports.handler = async (event) => {
 
       /* DELETE /.netlify/functions/messages/123456 */
     case 'DELETE':
-      if (segments.length === 1) {
+      if (segments.length === 1 || event.queryStringParameters.filter) {
         return messages.delete(event, segments[0]);
       }
       return {
