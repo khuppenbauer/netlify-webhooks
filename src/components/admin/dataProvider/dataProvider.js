@@ -23,7 +23,7 @@ export default {
         );
       }
       return {
-        data: json,
+        data: json.map(record => ({ id: record._id, ...record })),
         total: parseInt(
           headers
             .get('X-Total-Count')

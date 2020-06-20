@@ -13,7 +13,7 @@ const schema = new mongoose.Schema({
   event: {
     type: String,
   },
-  id: {
+  foreignKey: {
     type: String,
   },
   status: {
