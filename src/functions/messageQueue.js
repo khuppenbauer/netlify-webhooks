@@ -8,7 +8,7 @@ const executeSubscriptions = async (subscription, data) => {
   let status;
   const message = data.message !== undefined ? data.message : [];
   try {
-    const res = await axios.post(subscription.url, data.body);
+    const res = await axios.post(subscription.url, JSON.stringify(data.body));
     status = 'success';
     message.push({
       subscription,
@@ -22,6 +22,7 @@ const executeSubscriptions = async (subscription, data) => {
       error: err.message,
     });
   }
+  console.log([subscription, data, status, message])
   return Message.findByIdAndUpdate(data._id, { status, message });
 };
 
@@ -31,7 +32,11 @@ exports.handler = async (event) => {
     const data = JSON.parse(fullDocument);
     const subscriptionQuery = { app: data.app, event: data.event };
     const subscriptions = await Subscription.find(subscriptionQuery);
-    subscriptions.map((subscription) => executeSubscriptions(subscription, data));
+    const promises = subscriptions.map(async (subscription) => {
+      const promise = await executeSubscriptions(subscription, data);
+      return promise;
+    })
+    await Promise.all(promises);
     return {
       statusCode: 200,
       headers: {
