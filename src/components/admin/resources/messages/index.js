@@ -1,5 +1,9 @@
-import messagesList from './messagesList';
+import MessageIcon from '@material-ui/icons/Message';
+import MessagesList from './messagesList';
+import MessagesShow from './messagesShow';
 
 export default {
-  list: messagesList,
+  list: MessagesList,
+  show: MessagesShow,
+  icon: MessageIcon,
 };

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Edit, SimpleForm, TextInput } from 'react-admin';
 
-const subscriptionsEdit = (props) => (
+const SubscriptionsEdit = (props) => (
   <Edit title="Title" {...props}>
     <SimpleForm>
       <TextInput disabled source="_id" />
@@ -12,4 +12,4 @@ const subscriptionsEdit = (props) => (
   </Edit>
 );
 
-export default subscriptionsEdit;
+export default SubscriptionsEdit;

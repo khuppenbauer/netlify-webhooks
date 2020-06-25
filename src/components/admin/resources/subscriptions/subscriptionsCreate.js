@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Create, SimpleForm, TextInput } from 'react-admin';
 
-const subscriptionsCreate = (props) => (
+const SubscriptionsCreate = (props) => (
   <Create {...props}>
     <SimpleForm>
       <TextInput source="app" />
@@ -11,4 +11,4 @@ const subscriptionsCreate = (props) => (
   </Create>
 );
 
-export default subscriptionsCreate;
+export default SubscriptionsCreate;

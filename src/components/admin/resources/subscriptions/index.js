@@ -1,11 +1,13 @@
-import subscriptionsCreate from './subscriptionsCreate';
-import subscriptionsEdit from './subscriptionsEdit';
-import subscriptionsList from './subscriptionsList';
-import subscriptionsShow from './subscriptionsShow';
+import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
+import SubscriptionsCreate from './subscriptionsCreate';
+import SubscriptionsEdit from './subscriptionsEdit';
+import SubscriptionsList from './subscriptionsList';
+import SubscriptionsShow from './subscriptionsShow';
 
 export default {
-  list: subscriptionsList,
-  create: subscriptionsCreate,
-  edit: subscriptionsEdit,
-  show: subscriptionsShow,
+  list: SubscriptionsList,
+  create: SubscriptionsCreate,
+  edit: SubscriptionsEdit,
+  show: SubscriptionsShow,
+  icon: SubscriptionsIcon,
 };

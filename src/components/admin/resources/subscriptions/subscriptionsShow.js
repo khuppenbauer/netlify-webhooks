@@ -1,14 +1,16 @@
 import * as React from 'react';
-import { Show, SimpleShowLayout, TextField } from 'react-admin';
+import { Show, SimpleShowLayout, TextField, DateField } from 'react-admin';
 
-const subscriptionsShow = (props) => (
+const SubscriptionsShow = (props) => (
   <Show {...props}>
     <SimpleShowLayout>
       <TextField source="app" />
       <TextField source="event" />
       <TextField source="url" />
+      <DateField source="createdAt" />
+      <DateField source="updatedAt" />
     </SimpleShowLayout>
   </Show>
 );
 
-export default subscriptionsShow;
+export default SubscriptionsShow;

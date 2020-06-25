@@ -4,15 +4,16 @@ const Subscription = require('../../models/subscription');
 
 module.exports = async (event) => {
   let result;
-  let num;
+  let collectionCount;
   await Subscription.estimatedDocumentCount(function (err, count) {
-    num = count;
+    collectionCount = count;
   });
-  const page = event.queryStringParameters.page || 1;
-  const perPage = event.queryStringParameters.perPage || num;
-  const sort = event.queryStringParameters.sort || 'app event';
   const filterQuery = event.queryStringParameters.filter || '{}';
   const filter = JSON.parse(filterQuery);
+  const totalCount = await Subscription.count(filter);
+  const page = event.queryStringParameters.page || 1;
+  const perPage = event.queryStringParameters.perPage || collectionCount;
+  const sort = event.queryStringParameters.sort || 'app event';
   const options = {
     skip: (page * perPage) - perPage,
     limit: parseInt(perPage, 10),
@@ -36,7 +37,7 @@ module.exports = async (event) => {
     headers: {
       'Access-Control-Expose-Headers': 'X-Total-Count',
       'Content-Type': 'application/json',
-      'X-Total-Count': num.toString(),
+      'X-Total-Count': totalCount.toString(),
     },
     body: JSON.stringify(result),
   };

@@ -8,8 +8,9 @@ export default {
   getList: (resource, params) => {
     const { page, perPage } = params.pagination;
     const { field, order } = params.sort;
+    const sort = order === 'DESC' ? `-${field}` : field;
     const query = {
-      sort: order === 'desc' ? `-${field}` : field,
+      sort,
       page,
       perPage,
       filter: JSON.stringify(params.filter),
@@ -39,6 +40,28 @@ export default {
   getOne: (resource, params) => httpClient(`${apiUrl}/${resource}/${params.id}`).then(({ json }) => ({
     data: json,
   })),
+
+  getAggregation: (resource, params) => {
+    const { query } = params;
+    const url = `${apiUrl}/${resource}?query=${JSON.stringify(query)}`;
+    return httpClient(url).then(({ headers, json }) => {
+      if (!headers.has('X-Total-Count')) {
+        throw new Error(
+          'The X-Total-Count header is missing in the HTTP Response.',
+        );
+      }
+      return {
+        data: json.map(record => ({ id: record._id, ...record })),
+        total: parseInt(
+          headers
+            .get('X-Total-Count')
+            .split('/')
+            .pop(),
+          10,
+        ),
+      };
+    });
+  },
 
   getMany: (resource, params) => {
     const query = {

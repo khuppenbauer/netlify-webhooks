@@ -1,14 +1,39 @@
 import * as React from 'react';
-import { List, Datagrid, TextField } from 'react-admin';
+import { useMediaQuery } from '@material-ui/core';
+import {
+  SimpleList,
+  List,
+  Datagrid,
+  TextField,
+  EditButton,
+  DeleteButton,
+} from 'react-admin';
 
-const subscriptionsList = (props) => (
-  <List {...props}>
-    <Datagrid>
-      <TextField source="app" />
-      <TextField source="event" />
-      <TextField source="url" />
-    </Datagrid>
-  </List>
-);
+const SubscriptionsList = (props) => {
+  const isSmall = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+  return (
+    <List
+      {...props}
+      sort={{ field: 'app', order: 'ASC' }}
+    >
+      {isSmall ? (
+        <SimpleList
+          primaryText={(record) => `${record.app} ${record.event}`}
+          secondaryText={(record) => record.url}
+        />
+      ) : (
+        <Datagrid
+          rowClick="edit"
+        >
+          <TextField source="app"/>
+          <TextField source="event"/>
+          <TextField source="url"/>
+          <EditButton/>
+          <DeleteButton/>
+        </Datagrid>
+      )}
+    </List>
+  );
+};
 
-export default subscriptionsList;
+export default SubscriptionsList;
