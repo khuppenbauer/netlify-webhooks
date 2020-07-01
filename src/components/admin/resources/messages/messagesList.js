@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { useMediaQuery } from '@material-ui/core';
 import {
   SimpleList,
@@ -9,66 +9,9 @@ import {
   ShowButton,
   DeleteButton,
   Pagination,
-  Filter,
-  SelectInput,
-  useQuery,
 } from 'react-admin';
 import StatusField from '../../components/StatusField';
-
-const MessagesFilter = (props) => {
-  const pipeline = [
-    {
-      $group: {
-        _id: 0,
-        status: {
-          $addToSet: '$status',
-        },
-        app: {
-          $addToSet: '$app',
-        },
-        event: {
-          $addToSet: '$event',
-        },
-      },
-    },
-    {
-      $match: props.filterValues,
-    },
-  ];
-  const { data } = useQuery({
-    type: 'getAggregation',
-    resource: 'messages',
-    payload: {
-      query: {
-        type: 'aggregate',
-        pipeline,
-      },
-    },
-  });
-  if (data === undefined) {
-    return null;
-  }
-  const { app, event, status } = data[0];
-  return (
-    <Filter {...props}>
-      <SelectInput
-        source="app"
-        key="app-filter"
-        choices={app.map((appItem) => ({ id: appItem, name: appItem }))}
-      />
-      <SelectInput
-        source="event"
-        key="event-filter"
-        choices={event.map((eventItem) => ({ id: eventItem, name: eventItem }))}
-      />
-      <SelectInput
-        source="status"
-        key="status-filter"
-        choices={status.map((statusItem) => ({ id: statusItem, name: statusItem }))}
-      />
-    </Filter>
-  );
-};
+import MessagesFilter from './messagesFilter';
 
 const MessagesList = (props) => {
   const isSmall = useMediaQuery((theme) => theme.breakpoints.down('sm'));
@@ -84,6 +27,7 @@ const MessagesList = (props) => {
           primaryText={(record) => `${record.app} ${record.event}`}
           secondaryText={(record) => record.status}
           tertiaryText={(record) => new Date(record.createdAt).toLocaleDateString()}
+          linkType="show"
         />
       ) : (
         <Datagrid

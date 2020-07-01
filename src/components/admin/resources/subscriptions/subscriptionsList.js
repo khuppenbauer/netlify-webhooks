@@ -20,6 +20,7 @@ const SubscriptionsList = (props) => {
         <SimpleList
           primaryText={(record) => `${record.app} ${record.event}`}
           secondaryText={(record) => record.url}
+          linkType="edit"
         />
       ) : (
         <Datagrid
