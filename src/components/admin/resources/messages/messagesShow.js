@@ -1,10 +1,20 @@
 import * as React from 'react';
-import { Show, SimpleShowLayout, TextField, DateField } from 'react-admin';
+import {
+  Show,
+  SimpleShowLayout,
+  TextField,
+  DateField,
+} from 'react-admin';
 import JsonView from '../../components/JsonView';
 import StatusField from '../../components/StatusField';
+import ExecuteButton from '../../components/ExecuteButton';
+
+const MessageShowActions = ({ data }) => (
+  <ExecuteButton record={data}/>
+);
 
 const MessagesShow = (props) => (
-  <Show {...props}>
+  <Show title="Message" actions={<MessageShowActions />} {...props}>
     <SimpleShowLayout>
       <StatusField source="status" />
       <TextField source="foreignKey" />

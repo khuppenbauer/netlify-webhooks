@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Fragment } from 'react';
 import { useMediaQuery } from '@material-ui/core';
 import {
   SimpleList,
@@ -9,9 +10,18 @@ import {
   ShowButton,
   DeleteButton,
   Pagination,
+  BulkDeleteButton,
 } from 'react-admin';
 import StatusField from '../../components/StatusField';
 import MessagesFilter from './messagesFilter';
+import BulkExecuteButton from '../../components/BulkExecuteButton';
+
+const MessagesBulkActionButtons = (props) => (
+  <Fragment>
+    <BulkExecuteButton {...props} />
+    <BulkDeleteButton {...props} />
+  </Fragment>
+);
 
 const MessagesList = (props) => {
   const isSmall = useMediaQuery((theme) => theme.breakpoints.down('sm'));
@@ -21,6 +31,7 @@ const MessagesList = (props) => {
       filters={<MessagesFilter />}
       pagination={<Pagination rowsPerPageOptions={[10, 25, 50, 100]} />}
       sort={{ field: 'createdAt', order: 'DESC' }}
+      bulkActionButtons={<MessagesBulkActionButtons />}
     >
       {isSmall ? (
         <SimpleList
