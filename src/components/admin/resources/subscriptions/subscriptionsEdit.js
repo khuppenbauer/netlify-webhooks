@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Edit, SimpleForm, TextInput } from 'react-admin';
 
 const SubscriptionsEdit = (props) => (
-  <Edit title="Title" {...props}>
+  <Edit title="Subscription" {...props}>
     <SimpleForm>
       <TextInput disabled source="_id" />
       <TextInput source="app" />

@@ -36,7 +36,7 @@ const MessagesFilter = (props) => {
     },
   });
   if (data === undefined) {
-    return null;
+    return [];
   }
   const { app, event, status } = data[0];
   return (
