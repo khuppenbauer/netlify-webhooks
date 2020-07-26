@@ -13,7 +13,7 @@ const filteredResult = async (event) => {
   const totalCount = await Message.countDocuments(filter);
   const page = event.queryStringParameters.page || 1;
   const perPage = event.queryStringParameters.perPage || collectionCount;
-  const sort = event.queryStringParameters.sort || '-updateAt';
+  const sort = event.queryStringParameters.sort || '-updatedAt';
   const options = {
     skip: (page * perPage) - perPage,
     limit: parseInt(perPage, 10),
