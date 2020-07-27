@@ -1,21 +1,25 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
-const Activity = require('../../models/activity');
+const Photo = require('../../models/photo');
 
-module.exports = async (activity) => {
-  const { foreignKey } = activity;
-  const existing = await Activity.find({ foreignKey });
+module.exports = async (event, data) => {
+  const { foreignKey } = data;
+  const existing = await Photo.find({ foreignKey });
   if (existing.length > 0) {
     return {
       statusCode: 400,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: 'Activity already exists',
+      body: 'Photo already exists',
     };
   }
+  const photo = {
+    ...data,
+    _id: mongoose.Types.ObjectId(),
+  };
   try {
-    await Activity.create(activity);
+    await Photo.create(photo);
   } catch (err) {
     return {
       statusCode: 400,
@@ -32,6 +36,6 @@ module.exports = async (activity) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(activity),
+    body: JSON.stringify(photo),
   };
 };

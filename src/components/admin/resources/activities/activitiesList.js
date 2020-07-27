@@ -20,7 +20,7 @@ const ActivitiesList = (props) => {
         <SimpleList
           primaryText={(record) => `${record.name} ${record.distance}`}
           secondaryText={(record) => record.type}
-          linkType="edit"
+          linkType="show"
         />
       ) : (
         <Datagrid

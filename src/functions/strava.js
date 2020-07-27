@@ -1,7 +1,9 @@
 const dotenv = require('dotenv').config();
 const axios = require('axios');
+const mongoose = require('mongoose');
 const activities = require('./methods/activities');
 const messages = require('./methods/messages');
+const photos = require('./methods/photos');
 
 const getToken = async () => {
   const oAuthUrl = 'https://www.strava.com/oauth/token';
@@ -25,19 +27,37 @@ exports.handler = async (event) => {
     const { object_id: foreignKey } = data;
     const app = 'strava';
     const baseUrl = 'https://www.strava.com/api/v3/';
+    const imageSize = 800;
     const token = await getToken();
     const instance = axios.create({
       baseURL: `${baseUrl}`,
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    const res = await instance.get(`activities/${foreignKey}`);
+    const activityData = await instance.get(`activities/${foreignKey}`);
+    const activityPhotos = await instance.get(`activities/${foreignKey}/photos?size=${imageSize}`);
+    const activityPhotosArray = activityPhotos.data.reduce(
+      (acc, item) => (acc[item.unique_id] = item.urls[imageSize], acc),
+      {},
+    );
     const activity = {
-      ...res.data,
+      ...activityData.data,
+      photos: activityPhotosArray,
       foreignKey,
+      _id: mongoose.Types.ObjectId(),
     };
+
+    activityPhotos.data.map((activityPhoto) => (
+      photos.create(event, {
+        activity: activity._id,
+        foreignKey: activityPhoto.unique_id,
+        url: activityPhoto.urls[imageSize],
+        shootingDate: activityPhoto.created_at,
+      })
+    ));
+
     await messages.create(event, { foreignKey, app, event: 'import_activity' });
-    return activities.create(event, activity);
+    return activities.create(activity);
   }
   return {
     statusCode: 405,

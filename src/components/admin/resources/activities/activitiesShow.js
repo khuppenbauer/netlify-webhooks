@@ -9,7 +9,7 @@ import {
 import JsonView from '../../components/JsonView';
 
 const ActivitiesShow = (props) => (
-  <Show title="Subscription" {...props}>
+  <Show title="Activity" {...props}>
     <SimpleShowLayout>
       <DateField source="start_date" />
       <JsonView source="athlete" />
@@ -27,6 +27,7 @@ const ActivitiesShow = (props) => (
       <TextField source="elev_low" />
       <JsonView source="start_latlng" />
       <JsonView source="end_latlng" />
+      <JsonView source="photos" />
       <BooleanField source="private" />
     </SimpleShowLayout>
   </Show>

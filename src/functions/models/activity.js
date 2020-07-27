@@ -40,6 +40,9 @@ const schema = new mongoose.Schema({
   name: {
     type: String,
   },
+  photos: {
+    type: Object,
+  },
   private: {
     type: Boolean,
   },
@@ -47,7 +50,7 @@ const schema = new mongoose.Schema({
     type: Object,
   },
   start_date: {
-    type: Date
+    type: Date,
   },
   start_latlng: {
     type: Object,
