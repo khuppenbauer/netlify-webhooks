@@ -17,6 +17,7 @@
     "@material-ui/icons": "^4.9.1",
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
+    "moment": "^2.27.0",
     "mongoose": "^5.9.15",
     "netlify-lambda": "^1.6.3",
     "prop-types": "^15.7.2",
@@ -24,7 +25,9 @@
     "react-admin": "^3.6.0",
     "react-dom": "^16.13.1",
     "react-json-view": "^1.19.1",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "slugify": "^1.4.5",
+    "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
