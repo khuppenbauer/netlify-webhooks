@@ -7,6 +7,9 @@ const schemaOptions = {
 // Set Product Schema
 const schema = new mongoose.Schema({
   _id: mongoose.Schema.Types.ObjectId,
+  active: {
+    type: Boolean,
+  },
   app: {
     type: String,
   },

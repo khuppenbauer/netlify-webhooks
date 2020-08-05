@@ -7,6 +7,7 @@ import {
   TextField,
   EditButton,
   DeleteButton,
+  BooleanField,
 } from 'react-admin';
 
 const SubscriptionsList = (props) => {
@@ -26,6 +27,7 @@ const SubscriptionsList = (props) => {
         <Datagrid
           rowClick="edit"
         >
+          <BooleanField source="active"/>
           <TextField source="app"/>
           <TextField source="event"/>
           <TextField source="url"/>

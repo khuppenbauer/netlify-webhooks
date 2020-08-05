@@ -27,6 +27,7 @@ const executeSubscriptions = async (subscription, data) => {
 
 const executeMessage = async (data) => {
   const subscriptionQuery = {
+    active: true,
     app: data.app,
     event: data.event,
   };
