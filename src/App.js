@@ -7,6 +7,7 @@ import messages from './components/admin/resources/messages';
 import subscriptions from './components/admin/resources/subscriptions';
 import activities from './components/admin/resources/activities';
 import photos from './components/admin/resources/photos';
+import files from './components/admin/resources/files';
 
 const App = () => (
   <Admin dataProvider={dataProvider}>
@@ -14,6 +15,7 @@ const App = () => (
     <Resource name="subscriptions" {...subscriptions} />
     <Resource name="activities" {...activities} />
     <Resource name="photos" {...photos} />
+    <Resource name="files" {...files} />
   </Admin>
 );
 
