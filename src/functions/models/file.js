@@ -37,6 +37,9 @@ const schema = new mongoose.Schema({
   content_hash: {
     type: String,
   },
+  sha1: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 
