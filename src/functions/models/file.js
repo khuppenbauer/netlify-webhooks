@@ -40,6 +40,12 @@ const schema = new mongoose.Schema({
   sha1: {
     type: String,
   },
+  mimeType: {
+    type: String,
+  },
+  extension: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 

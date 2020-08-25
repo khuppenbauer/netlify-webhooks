@@ -1,10 +1,12 @@
 const dotenv = require('dotenv').config();
 const crypto = require('crypto');
 const axios = require('axios');
+const mime = require('mime-types');
 const mongoose = require('mongoose');
 const db = require('./database/mongodb');
 const Token = require('./models/token');
 const File = require('./models/file');
+const messages = require('./methods/messages');
 
 const downloadEntry = async (id) => {
   const downloadUrl = 'https://content.dropboxapi.com/2/files/download';
@@ -82,7 +84,7 @@ const syncFiles = async (entriesData) => {
   return res.data;
 };
 
-const saveEntries = async (entries, entriesData) => {
+const saveEntries = async (entries, entriesData, event) => {
   const promises = entries
     .filter((entry) => entry['.tag'] === 'file')
     .map(async (entry) => {
@@ -91,15 +93,21 @@ const saveEntries = async (entries, entriesData) => {
         .createHash('sha1')
         .update(data)
         .digest('hex');
+      const mimeType = mime.lookup(entry.name);
+      const extension = mime.extension(mimeType);
       entriesData[sha1] = { data, path: entry.path_display };
-      File.create(
+      const file = await File.create(
         {
           ...entry,
           foreignKey: entry.id,
           sha1,
+          mimeType,
+          extension,
           _id: mongoose.Types.ObjectId(),
         },
       );
+      event['body'] = JSON.stringify(file);
+      await messages.create(event, { foreignKey: entry.id, app: 'dropbox', event: `deploy_${extension}_file` });
     });
   await Promise.all(promises);
   return entriesData;
@@ -120,7 +128,7 @@ const listFolders = async (url, body) => {
   return res.data;
 };
 
-const executeChanges = async (account, entriesData) => {
+const executeChanges = async (account, entriesData, event) => {
   const tokenQuery = {
     app: 'dropbox',
     account,
@@ -144,7 +152,7 @@ const executeChanges = async (account, entriesData) => {
         token: data.cursor,
       },
     );
-    entriesData = await saveEntries(data.entries, entriesData);
+    entriesData = await saveEntries(data.entries, entriesData, event);
   }
   const promises = tokens.map(async (token) => {
     url = '2/files/list_folder/continue';
@@ -153,7 +161,7 @@ const executeChanges = async (account, entriesData) => {
     };
     data = await listFolders(url, body);
     await Token.findByIdAndUpdate(token._id, { token: data.cursor });
-    entriesData = await saveEntries(data.entries, entriesData);
+    entriesData = await saveEntries(data.entries, entriesData, event);
   })
   await Promise.all(promises);
   return entriesData;
@@ -166,7 +174,7 @@ exports.handler = async (event) => {
     const { accounts } = listFolder;
     let entriesData = {};
     const promises = accounts.map(async (account) => {
-      entriesData = await executeChanges(account, entriesData);
+      entriesData = await executeChanges(account, entriesData, event);
     });
     await Promise.all(promises);
     await new Promise((r) => setTimeout(r, 1000));

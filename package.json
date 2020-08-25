@@ -19,6 +19,7 @@
     "convert-units": "^2.3.4",
     "crypto": "^1.0.1",
     "dotenv": "^8.2.0",
+    "mime-types": "^2.1.27",
     "moment": "^2.27.0",
     "mongoose": "^5.9.15",
     "netlify-lambda": "^1.6.3",
