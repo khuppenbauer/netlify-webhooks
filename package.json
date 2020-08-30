@@ -23,6 +23,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.9.15",
     "netlify-lambda": "^1.6.3",
+    "path": "^0.12.7",
     "prop-types": "^15.7.2",
     "ra-core": "^3.7.1",
     "react": "^16.13.1",

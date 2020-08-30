@@ -46,6 +46,9 @@ const schema = new mongoose.Schema({
   extension: {
     type: String,
   },
+  source: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 
