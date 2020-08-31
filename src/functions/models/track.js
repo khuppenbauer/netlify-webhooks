@@ -1,0 +1,94 @@
+// track.js
+const mongoose = require('mongoose');
+
+const schemaOptions = {
+  timestamps: true,
+};
+// Set Track Schema
+const schema = new mongoose.Schema({
+  _id: mongoose.Schema.Types.ObjectId,
+  name: {
+    type: String,
+  },
+  date: {
+    type: Date,
+  },
+  foreignKey: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+  active: {
+    type: Boolean,
+  },
+  author: {
+    type: String,
+  },
+  startCoords: {
+    type: Object,
+  },
+  endCoords: {
+    type: Object,
+  },
+  minCoords: {
+    type: Object,
+  },
+  maxCoords: {
+    type: Object,
+  },
+  distance: {
+    type: Number,
+  },
+  elapsedTime: {
+    type: Number,
+  },
+  totalElevationGain: {
+    type: Number,
+  },
+  totalElevationLoss: {
+    type: Number,
+  },
+  elevLow: {
+    type: Number,
+  },
+  elevHigh: {
+    type: Number,
+  },
+  startCity: {
+    type: String,
+  },
+  startState: {
+    type: String,
+  },
+  startCountry: {
+    type: String,
+  },
+  endCity: {
+    type: String,
+  },
+  endState: {
+    type: String,
+  },
+  endCountry: {
+    type: String,
+  },
+  gpxFile: {
+    type: String,
+  },
+  staticImage: {
+    type: String,
+  },
+  geoJson: {
+    type: Object,
+  },
+  geoJsonFile: {
+    type: String,
+  },
+  visualization: {
+    type: String,
+  },
+}, schemaOptions);
+const Track = mongoose.model('track', schema);
+
+module.exports = Track;

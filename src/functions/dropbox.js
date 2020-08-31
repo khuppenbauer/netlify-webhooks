@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const db = require('./database/mongodb');
 const Token = require('./models/token');
 const files = require('./methods/files');
+const tracks = require('./methods/tracks');
 
 const downloadEntry = async (id) => {
   const downloadUrl = 'https://content.dropboxapi.com/2/files/download';
@@ -31,12 +32,21 @@ const saveEntries = async (entries, event) => {
       const data = await downloadEntry(entry.id);
       const mimeType = mime.lookup(entry.name);
       const extension = mime.extension(mimeType);
+      const track = {
+        gpxFile: entry.path_display,
+        foreignKey: entry.id,
+        _id: mongoose.Types.ObjectId(),
+      };
       const metaData = {
         ...entry,
         foreignKey: entry.id,
         mimeType,
         extension,
+        track: track._id,
       };
+      if (extension === 'gpx') {
+        await tracks.create(track);
+      }
       await files.create(data, metaData, event);
     });
   await Promise.all(promises);

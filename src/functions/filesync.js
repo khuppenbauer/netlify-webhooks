@@ -17,6 +17,7 @@ const uploadFiles = async (id, hashes, filesMetaData, event) => {
         data,
         foreignKey,
         extension,
+        track,
       } = filesMetaData[hash];
       netlifyFileUploadEndpoint = `deploys/${id}/files/${path_display}`;
       const fileData = data;
@@ -32,7 +33,7 @@ const uploadFiles = async (id, hashes, filesMetaData, event) => {
       const { name } = path.parse(path_display);
       const message = {
         ...event,
-        body: JSON.stringify({name, path_display}),
+        body: JSON.stringify({name, path_display, track}),
       };
       await messages.create(message, { foreignKey, app: 'netlify', event: `deploy_${extension}_file` });
     }

@@ -4,6 +4,7 @@ const path = require('path');
 const mime = require('mime-types');
 const axios = require('axios');
 const files = require('./methods/files');
+const Track = require('./models/track');
 
 const convertGeoJson = async (event) => {
   const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
@@ -16,7 +17,7 @@ const convertGeoJson = async (event) => {
     postfix,
   } = event.queryStringParameters;
   const body = JSON.parse(event.body);
-  const { path_display, name } = body;
+  const { path_display, name, track } = body;
 
   const params = [
     `infile=${cdnUrl}${path_display}`,
@@ -59,7 +60,11 @@ const convertGeoJson = async (event) => {
     foreignKey: newFileName,
     mimeType,
     extension,
+    track,
   };
+  if (extension === 'geojson') {
+    await Track.findByIdAndUpdate(track, { geoJsonFile: `${extension}/${newFileName}` });
+  }
   const data = JSON.stringify(res.data);
   return files.create(data, metaData, event);
 };
