@@ -43,19 +43,27 @@ const createStaticImage = async (event) => {
   const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
   const mapboxStyle = 'mapbox/satellite-streets-v11';
   const imageSize = '640x480';
-  const coordinates = geoJson.features[0].geometry.coordinates;
-  const lineString = {
-    type: 'LineString',
-    coordinates,
+  const stroke = '#ff3300';
+  const strokeWidth = 5;
+  const geoJsonString = {
+    type: 'Feature',
+    properties: {
+      stroke,
+      'stroke-width': strokeWidth,
+    },
+    geometry: {
+      type: 'LineString',
+      coordinates: geoJson.features[0].geometry.coordinates,
+    },
   };
   const pathParams = [
     mapboxStyle,
     'static',
-    `geojson(${JSON.stringify(lineString)})`,
+    `geojson(${encodeURIComponent(JSON.stringify(geoJsonString))})`,
     'auto',
     imageSize,
   ];
-  const url = `${mapboxBaseUrl}${encodeURI(pathParams.join('/'))}?access_token=${mapboxApiAccessToken}`;
+  const url = `${mapboxBaseUrl}${pathParams.join('/')}?access_token=${mapboxApiAccessToken}`;
   const data = await axios
     .get(url, {
       responseType: 'arraybuffer',
