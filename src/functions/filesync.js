@@ -20,7 +20,8 @@ const uploadFiles = async (id, hashes, filesMetaData, event) => {
         track,
       } = filesMetaData[hash];
       netlifyFileUploadEndpoint = `deploys/${id}/files/${path_display}`;
-      const fileData = data;
+      const base64Data = Buffer.from(data, 'base64');
+      const fileData = base64Data.toString('base64') === data ? base64Data : data;
       await axios({
         method: 'put',
         url: `${netlifyBaseUrl}${netlifyFileUploadEndpoint}`,

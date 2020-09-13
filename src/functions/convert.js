@@ -37,19 +37,22 @@ const convertGeoJson = async (event) => {
   const res = await axios({
     method: 'get',
     url,
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
   if (res.status !== 200) {
     return {};
   }
+  const data = JSON.stringify(res.data);
+  const { 'content-length': size } = res.headers;
   const { name: fileName } = path.parse(name);
   const mimeType = mime.lookup(`${fileName}.${outtype}`);
   const extension = mime.extension(mimeType);
   const filePostfix = postfix ? postfix : crypto
     .createHash('sha1')
     .update(query)
+    .digest('hex');
+  const sha1 = crypto
+    .createHash('sha1')
+    .update(data)
     .digest('hex');
   const newFileName = `${fileName}_${filePostfix.substring(0,6)}.${extension}`;
   const metaData = {
@@ -60,12 +63,13 @@ const convertGeoJson = async (event) => {
     foreignKey: newFileName,
     mimeType,
     extension,
+    size,
+    sha1,
     track,
   };
   if (extension === 'geojson') {
     await Track.findByIdAndUpdate(track, { geoJsonFile: `${extension}/${newFileName}` });
   }
-  const data = JSON.stringify(res.data);
   return files.create(data, metaData, event);
 };
 

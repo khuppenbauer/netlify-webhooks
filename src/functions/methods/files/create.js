@@ -7,7 +7,7 @@ const messages = require('../messages');
 const createMessage = async (file, data, event) => {
   const res = {};
   const {
-    name,
+    path_display,
     sha1,
     foreignKey,
     extension,
@@ -15,7 +15,7 @@ const createMessage = async (file, data, event) => {
   } = file;
   res[sha1] = {
     data,
-    path_display: `${extension}/${name}`,
+    path_display,
     foreignKey,
     extension,
   };
@@ -31,29 +31,19 @@ const createMessage = async (file, data, event) => {
 }
 
 module.exports = async (data, metaData, event) => {
-  const sha1 = crypto
-    .createHash('sha1')
-    .update(data)
-    .digest('hex');
-  const size = Buffer.byteLength(data, 'utf8');
-  const file = {
-    ...metaData,
-    sha1,
-    size,
-  };
   await File.create(
     {
-      ...file,
+      ...metaData,
       source: 'messagequeue',
       _id: mongoose.Types.ObjectId(),
     },
   );
-  await createMessage(file, data, event);
+  await createMessage(metaData, data, event);
   return {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(file),
+    body: JSON.stringify(metaData),
   };
 };

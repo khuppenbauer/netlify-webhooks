@@ -1,4 +1,5 @@
 const dotenv = require('dotenv').config();
+const crypto = require('crypto');
 const axios = require('axios');
 const mime = require('mime-types');
 const mongoose = require('mongoose');
@@ -37,11 +38,16 @@ const saveEntries = async (entries, event) => {
         foreignKey: entry.id,
         _id: mongoose.Types.ObjectId(),
       };
+      const sha1 = crypto
+        .createHash('sha1')
+        .update(data)
+        .digest('hex');
       const metaData = {
         ...entry,
         foreignKey: entry.id,
         mimeType,
         extension,
+        sha1,
         track: track._id,
       };
       if (extension === 'gpx') {
