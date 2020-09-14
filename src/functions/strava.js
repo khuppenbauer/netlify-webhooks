@@ -127,7 +127,7 @@ exports.handler = async (event) => {
     const activityStreams = await instance.get(`activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`);
     const gpx = await streamToGpx(activityStreams.data, activity.name, activity.start_date);
     const fileName = `${moment(activity.start_date).format('YYYY-MM-DD')}-${activity.name}`;
-    await uploadGpx(gpx, slugify(fileName));
+    await uploadGpx(gpx, slugify(fileName, { locale: 'de' }));
 
     await messages.create(event, { foreignKey, app, event: 'import_activity' });
     return activities.create(activity);
