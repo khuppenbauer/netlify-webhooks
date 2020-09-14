@@ -44,7 +44,7 @@ const createStaticImage = async (event) => {
   const mapboxStyle = 'mapbox/satellite-streets-v11';
   const imageSize = '640x480';
   const stroke = '#ff3300';
-  const strokeWidth = 5;
+  const strokeWidth = 3;
   const geoJsonString = {
     type: 'Feature',
     properties: {
@@ -89,14 +89,7 @@ const createStaticImage = async (event) => {
     track,
   };
   await Track.findByIdAndUpdate(track, { staticImage: `preview/${newFileName}` });
-  await files.create(data.toString('base64'), metaData, event);
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': mimeType,
-    },
-    body: data,
-  };
+  return files.create(data.toString('base64'), metaData, event);
 };
 
 exports.handler = async (event) => {
