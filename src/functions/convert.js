@@ -42,7 +42,7 @@ const convertGeoJson = async (event) => {
     return {};
   }
   const data = JSON.stringify(res.data);
-  const { 'content-length': size } = res.headers;
+  const size = Buffer.byteLength(data, 'utf8');
   const { name: fileName } = path.parse(name);
   const mimeType = mime.lookup(`${fileName}.${outtype}`);
   const extension = mime.extension(mimeType);
@@ -68,7 +68,7 @@ const convertGeoJson = async (event) => {
     track,
   };
   if (extension === 'geojson') {
-    await Track.findByIdAndUpdate(track, { geoJsonFile: `${extension}/${newFileName}` });
+    await Track.findByIdAndUpdate(track, { geoJsonFile: `${extension}/${newFileName}`, geoJson: res.data });
   }
   return files.create(data, metaData, event);
 };
