@@ -49,6 +49,12 @@ const schema = new mongoose.Schema({
   totalElevationLoss: {
     type: Number,
   },
+  startElevation: {
+    type: Number,
+  },
+  endElevation: {
+    type: Number,
+  },
   elevLow: {
     type: Number,
   },
