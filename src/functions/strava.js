@@ -3,7 +3,7 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const xmlBuilder = require('xmlbuilder');
 const moment = require('moment');
-const slugify = require('slugify');
+const getSlug = require('speakingurl');
 const activities = require('./methods/activities');
 const messages = require('./methods/messages');
 const photos = require('./methods/photos');
@@ -127,7 +127,9 @@ exports.handler = async (event) => {
     const activityStreams = await instance.get(`activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`);
     const gpx = await streamToGpx(activityStreams.data, activity.name, activity.start_date);
     const fileName = `${moment(activity.start_date).format('YYYY-MM-DD')}-${activity.name}`;
-    await uploadGpx(gpx, slugify(fileName, { locale: 'de' }));
+    await uploadGpx(gpx, getSlug(fileName, {
+      maintainCase: true,
+    }));
 
     await messages.create(event, { foreignKey, app, event: 'import_activity' });
     return activities.create(activity);
