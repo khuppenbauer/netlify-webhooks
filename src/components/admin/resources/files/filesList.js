@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Fragment } from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import { makeStyles } from '@material-ui/core/styles';
@@ -9,7 +10,10 @@ import {
   TextField,
   DateField,
   Pagination,
+  BulkDeleteButton,
+  DeleteButton,
 } from 'react-admin';
+import FilesFilter from './filesFilter';
 
 const useListStyles = makeStyles(theme => ({
   card: {
@@ -32,6 +36,12 @@ const useListStyles = makeStyles(theme => ({
     margin: '0.5rem 0',
   },
 }));
+
+const FilesBulkActionButtons = (props) => (
+  <Fragment>
+    <BulkDeleteButton {...props} />
+  </Fragment>
+);
 
 const FilesGrid = (props) => {
   const { data, ids } = props;
@@ -61,16 +71,21 @@ const FilesList = (props) => {
   return (
     <List {...props}
       perPage={25}
+      filters={<FilesFilter />}
       pagination={<Pagination rowsPerPageOptions={[10, 25, 50, 100]} />}
-      sort={{ field: 'server_modified', order: 'DESC' }}
-      bulkActionButtons={false}
+      sort={{ field: 'updatedAt', order: 'DESC' }}
+      bulkActionButtons={<FilesBulkActionButtons />}
     >
       {isSmall ? (
         <FilesGrid />
       ) : (
         <Datagrid>
           <TextField source="name"/>
-          <DateField source="server_modified"/>
+          <TextField source="mimeType"/>
+          <TextField source="extension"/>
+          <TextField source="size"/>
+          <DateField source="updatedAt"/>
+          <DeleteButton/>
         </Datagrid>
       )}
     </List>

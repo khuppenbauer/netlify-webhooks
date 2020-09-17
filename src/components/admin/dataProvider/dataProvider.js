@@ -43,7 +43,7 @@ export default {
 
   getAggregation: (resource, params) => {
     const { query } = params;
-    const url = `${apiUrl}/${resource}?query=${JSON.stringify(query)}`;
+    const url = `${apiUrl}/${resource}?query=${encodeURIComponent(JSON.stringify(query))}`;
     return httpClient(url).then(({ headers, json }) => {
       if (!headers.has('X-Total-Count')) {
         throw new Error(

@@ -14,6 +14,15 @@ exports.handler = async (event) => {
         body: 'too many segments in GET request',
       };
 
+    /* DELETE /.netlify/functions/files/123456 */
+    case 'DELETE':
+      if (segments.length === 1 || event.queryStringParameters.filter) {
+        return files.delete(event, segments[0]);
+      }
+      return {
+        statusCode: 500,
+        body: 'invalid segments in DELETE request, must be /.netlify/functions/files/123456',
+      };
       /* Fallthrough case */
     default:
       return {
