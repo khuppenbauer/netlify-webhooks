@@ -21,11 +21,5 @@ module.exports = async (data, path) => {
     },
     data,
   });
-  return {
-    statusCode: 201,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(res.data),
-  };
+  return res.data;
 };

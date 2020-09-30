@@ -4,7 +4,7 @@ const db = require('../../database/mongodb');
 const File = require('../../models/file');
 const filesSync = require('./sync');
 
-module.exports = async (event, metaData, data) => {
+module.exports = async (metaData) => {
   const existing = await File.find({ foreignKey: metaData.foreignKey });
   if (existing.length > 0) {
     await File.findByIdAndUpdate(existing[0]._id, metaData);
@@ -16,7 +16,7 @@ module.exports = async (event, metaData, data) => {
       },
     );
   }
-  await filesSync(event, metaData, data);
+  await filesSync(metaData);
   return {
     statusCode: 200,
     headers: {

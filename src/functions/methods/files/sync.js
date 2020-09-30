@@ -2,15 +2,13 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
+const dropbox = require('../dropbox');
 
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
 const netlifyDeployEndpoint = `sites/${process.env.NETLIFY_CDN_ID}/deploys`
 const token = process.env.NETLIFY_ACCESS_TOKEN;
 
-const uploadFiles = async (id, sha1, metaData, data) => {
-  const {
-    path_display: pathDisplay,
-  } = metaData;
+const uploadFiles = async (id, sha1, pathDisplay, data) => {
   const netlifyFileUploadEndpoint = `deploys/${id}/files/${pathDisplay}`;
   const base64Data = Buffer.from(data, 'base64');
   const fileData = base64Data.toString('base64') === data ? base64Data : data;
@@ -25,12 +23,12 @@ const uploadFiles = async (id, sha1, metaData, data) => {
   });
 };
 
-const syncFiles = async (event, metaData, data) => {
+const syncFiles = async () => {
   const files = await File.find({});
-  const filesData = {};
-  files.forEach((file) => {
-    filesData[file.path_display] = file.sha1;
-  });
+  const filesData = files.reduce(
+    (acc, item) => (acc[item.path_display] = item.sha1, acc),
+    {},
+  );
   const body = {
     files: filesData,
   };
@@ -44,13 +42,26 @@ const syncFiles = async (event, metaData, data) => {
     data: JSON.stringify(body),
   });
   if (res.data.required) {
-    await uploadFiles(res.data.id, res.data.required, metaData, data);
+    const missingFiles = await File.find(
+      {
+        sha1: {
+          $in: res.data.required,
+        },
+      },
+    );
+    const promises = missingFiles
+      .map(async (item) => {
+        const { foreignKey, sha1, path_display: pathDisplay } = item;
+        const data = await dropbox.download(foreignKey);
+        await uploadFiles(res.data.id, sha1, pathDisplay, data);
+      });
+    await Promise.all(promises);
   }
   return res.data;
 };
 
-module.exports = async (event, metaData, data) => {
-  const res = await syncFiles(event, metaData, data);
+module.exports = async (metaData) => {
+  await syncFiles();
   return {
     statusCode: 200,
     headers: {

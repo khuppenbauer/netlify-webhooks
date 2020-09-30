@@ -7,7 +7,7 @@ module.exports = async (path) => {
   const args = {
     path,
   };
-  await axios({
+  const res = await axios({
     method: 'post',
     url: dropboxDeleteUrl,
     headers: {
@@ -16,10 +16,5 @@ module.exports = async (path) => {
     },
     data: JSON.stringify(args),
   });
-  return {
-    statusCode: 204,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  };
+  return res.data;
 };

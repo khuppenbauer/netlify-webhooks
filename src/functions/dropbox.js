@@ -9,9 +9,9 @@ const Token = require('./models/token');
 const File = require('./models/file');
 const files = require('./methods/files');
 const messages = require('./methods/messages');
+const dropbox = require('./methods/dropbox');
 
 const dropboxRpcEndpoint = 'https://api.dropboxapi.com/';
-const dropboxDownloadUrl = 'https://content.dropboxapi.com/2/files/download';
 const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 const replaceAll = async (str, mapObj) => {
@@ -21,25 +21,6 @@ const replaceAll = async (str, mapObj) => {
   });
 };
 
-const downloadEntry = async (id) => {
-  const args = {
-    path: id,
-  };
-  const res = await axios({
-    method: 'post',
-    url: dropboxDownloadUrl,
-    headers: {
-      Authorization: `Bearer ${dropboxAccessToken}`,
-      'Content-Type': 'application/octet-stream',
-      'Dropbox-API-Arg': JSON.stringify(args),
-    },
-  });
-  if (typeof res.data === 'object') {
-    return JSON.stringify(res.data);
-  }
-  return res.data;
-};
-
 const saveEntries = async (entries, event, message) => {
   const promises = entries
     .map(async (entry) => {
@@ -47,7 +28,7 @@ const saveEntries = async (entries, event, message) => {
         await File.deleteMany({ path_display: entry.path_display });
       } else if (entry['.tag'] === 'file') {
         const { dir } = path.parse(entry.path_display);
-        const data = await downloadEntry(entry.id);
+        const data = await dropbox.download(entry.id);
         const mimeType = mime.lookup(entry.name);
         const extension = mime.extension(mimeType);
         const sha1 = crypto
@@ -66,7 +47,7 @@ const saveEntries = async (entries, event, message) => {
           ...event,
           body: JSON.stringify(metaData),
         };
-        await files.create(event, metaData, data);
+        await files.create(metaData);
         const mapObj = { '{{dir}}': dir.replace('/',''), '{{extension}}': extension };
         const eventMessage = await replaceAll(message, mapObj);
         await messages.create(messageObject, { foreignKey: entry.id, app: 'dropbox', event: eventMessage });
