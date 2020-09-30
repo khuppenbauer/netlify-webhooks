@@ -20,7 +20,7 @@ const filteredResult = async (event) => {
     sort,
   };
   try {
-    result = await Message.find(filter, 'app event status foreignKey createdAt', options);
+    result = await Message.find(filter, null, options);
   } catch (err) {
     return {
       statusCode: 400,

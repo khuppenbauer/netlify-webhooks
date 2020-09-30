@@ -5,8 +5,11 @@ const db = require('./database/mongodb');
 const Track = require('./models/track');
 const messages = require('./methods/messages');
 
+const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
+const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
+const geoLibBaseUrl = process.env.GEOLIB_FUNCTIONS_AP_BASE_URL;
+
 const getGeoLibData = async (data, method) => {
-  const geoLibBaseUrl = process.env.GEOLIB_FUNCTIONS_AP_BASE_URL;
   const res = await axios({
     method: 'post',
     url: `${geoLibBaseUrl}${method}`,
@@ -19,9 +22,8 @@ const getGeoLibData = async (data, method) => {
 };
 
 const getLocation = async (loc) => {
-  const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
   const params = {
-    key: process.env.LOCATION_SERVICE_ACCESS_TOKEN,
+    key: locationServiceAccessToken,
     lat: loc[1],
     lon: loc[0],
     format: 'json',
@@ -73,6 +75,7 @@ const calculateElevation = async (points) => {
 const addMetaData = async (event) => {
   const body = JSON.parse(event.body);
   const { track } = body;
+  const message = 'add_metadata';
   const data = await Track.findById(track);
   const { coordinates } = data.geoJson.features[0].geometry;
   const points = {
@@ -102,11 +105,7 @@ const addMetaData = async (event) => {
     ...elevation,
   };
   await Track.findByIdAndUpdate(track, metaData);
-  const message = {
-    ...event,
-    body: JSON.stringify({track}),
-  };
-  await messages.create(message, { track, app: 'messagequeue', event: `add_metadata` });
+  await messages.create(event, { foreignKey: track, app: 'messageQueue', event: message });
   return metaData;
 };
 

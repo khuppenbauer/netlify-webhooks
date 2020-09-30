@@ -1,22 +1,27 @@
 const dotenv = require('dotenv').config();
-const crypto = require('crypto');
 const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
-const files = require('./methods/files');
+const dropbox = require('./methods/dropbox');
+const messages = require('./methods/messages');
 const Track = require('./models/track');
+const File = require('./models/file');
 
-const getGeoJson = async (event) => {
-  const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
-  const cdnUrl = process.env.NETLIFY_CDN_URL;
+const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
+const cdnUrl = process.env.NETLIFY_CDN_URL;
+const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
+const mapboxBaseUrl = 'https://api.mapbox.com/styles/v1/';
+const mapboxStyle = 'mapbox/satellite-streets-v11';
+const imageSize = '640x480';
+const stroke = '#ff3300';
+const strokeWidth = 3;
 
-  const body = JSON.parse(event.body);
-  const { path_display } = body;
+const getGeoJson = async (gpxFile) => {
   const outtype = 'geojson';
   const count = 100;
 
   const params = [
-    `infile=${cdnUrl}${path_display}`,
+    `infile=${cdnUrl}${gpxFile}`,
     `outtype=${outtype}`,
     `count=${count}`,
   ];
@@ -35,16 +40,7 @@ const getGeoJson = async (event) => {
   return res.data;
 };
 
-const createStaticImage = async (event) => {
-  const body = JSON.parse(event.body);
-  const { name, track } = body;
-  const geoJson = await getGeoJson(event);
-  const mapboxBaseUrl = 'https://api.mapbox.com/styles/v1/';
-  const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
-  const mapboxStyle = 'mapbox/satellite-streets-v11';
-  const imageSize = '640x480';
-  const stroke = '#ff3300';
-  const strokeWidth = 3;
+const createImage = async (geoJson) => {
   const geoJsonString = {
     type: 'Feature',
     properties: {
@@ -64,37 +60,47 @@ const createStaticImage = async (event) => {
     imageSize,
   ];
   const url = `${mapboxBaseUrl}${pathParams.join('/')}?access_token=${mapboxApiAccessToken}`;
-  const data = await axios
+  return axios
     .get(url, {
       responseType: 'arraybuffer',
     })
     .then((response) => Buffer.from(response.data, 'binary'));
-  const sha1 = crypto
-    .createHash('sha1')
-    .update(data)
-    .digest('hex');
-  const { name: fileName } = path.parse(name);
-  const { ext: extension, mime: mimeType } = await fileType.fromBuffer(data);
-  const size = Buffer.byteLength(data, 'utf8');
-  const newFileName = `${fileName}.${extension}`;
-  const metaData = {
-    name: newFileName,
-    path_lower: `preview/${newFileName}`.toLocaleLowerCase(),
-    path_display: `preview/${newFileName}`,
-    foreignKey: newFileName,
-    mimeType,
-    extension,
-    size,
-    sha1,
-    track,
-  };
-  await Track.findByIdAndUpdate(track, { staticImage: `preview/${newFileName}` });
-  return files.create(data.toString('base64'), metaData, event);
-};
+}
+
+const dropboxUpload = async (data, filePath) => {
+  const existingFile = await File.find({
+    path_display: filePath,
+  });
+  if (existingFile.length > 0) {
+    await dropbox.delete(filePath);
+  }
+  await dropbox.upload(data, filePath);
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'POST') {
-    return createStaticImage(event);
+    const body = JSON.parse(event.body);
+    const { gpxFile, name, track } = body;
+    const message = 'create_static_image';
+    const geoJson = await getGeoJson(gpxFile);
+    const data = await createImage(geoJson);
+    const { name: fileName } = path.parse(name);
+    const { ext: extension } = await fileType.fromBuffer(data);
+    const filePath = `/preview/${fileName}.${extension}`;
+    await dropboxUpload(data, filePath);
+    await Track.findByIdAndUpdate(track, { staticImage: filePath });
+    const messageObject = {
+      ...event,
+      body: JSON.stringify({ ...body, staticImage: filePath, path: filePath }),
+    };
+    await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: messageObject.body,
+    };
   }
   return {
     statusCode: 405,

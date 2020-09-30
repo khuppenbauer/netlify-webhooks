@@ -42,7 +42,6 @@ const getColsForWidth = (width) => {
 
 const PhotosGrid = ({ ids, data, basePath, width }) => {
   const classes = useStyles();
-  console.log(basePath);
   if (!ids || !data) return null;
 
   return (

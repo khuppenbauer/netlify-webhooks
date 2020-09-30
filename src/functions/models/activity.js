@@ -31,6 +31,9 @@ const schema = new mongoose.Schema({
   foreignKey: {
     type: Number,
   },
+  gpxFile: {
+    type: String,
+  },
   max_speed: {
     type: Number,
   },

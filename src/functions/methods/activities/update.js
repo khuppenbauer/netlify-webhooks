@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
 
-module.exports = async (event, id) => {
-  const { body } = event;
-  const activity = JSON.parse(body);
+module.exports = async (activity, id) => {
   try {
     await Activity.findByIdAndUpdate(id, activity);
   } catch (err) {

@@ -37,8 +37,7 @@ exports.handler = async (event) => {
   } if (event.httpMethod === 'POST') {
     const data = JSON.parse(event.body);
     const { object_id: foreignKey, aspect_type: aspectType, object_type: objectType } = data;
-    const app = 'strava';
-    return messages.create(event, { foreignKey, app, event: `${aspectType}_${objectType}` });
+    return messages.create(event, { foreignKey, app: 'strava', event: `${aspectType}_${objectType}` });
   }
   return {
     statusCode: 405,
