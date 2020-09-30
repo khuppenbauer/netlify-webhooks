@@ -42,7 +42,7 @@ module.exports = async (event, data) => {
     };
   }
   return {
-    statusCode: 201,
+    statusCode: 200,
     headers: {
       'Content-Type': 'application/json',
     },
