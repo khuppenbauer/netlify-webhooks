@@ -21,39 +21,44 @@ const replaceAll = async (str, mapObj) => {
   });
 };
 
+const saveFile = async (entry, event, message) => {
+  const { dir } = path.parse(entry.path_display);
+  const data = await dropbox.download(entry.id);
+  const mimeType = mime.lookup(entry.name);
+  const extension = mime.extension(mimeType);
+  const sha1 = crypto
+    .createHash('sha1')
+    .update(data)
+    .digest('hex');
+  const metaData = {
+    ...entry,
+    foreignKey: entry.id,
+    mimeType,
+    extension,
+    sha1,
+  };
+  delete metaData['.tag'];
+  const messageObject = {
+    ...event,
+    body: JSON.stringify(metaData),
+  };
+  await files.create(metaData);
+  const mapObj = { '{{dir}}': dir.replace('/',''), '{{extension}}': extension };
+  const eventMessage = await replaceAll(message, mapObj);
+  await messages.create(messageObject, { foreignKey: entry.id, app: 'dropbox', event: eventMessage });
+
+}
+
 const saveEntries = async (entries, event, message) => {
-  const promises = entries
-    .map(async (entry) => {
-      if (entry['.tag'] === 'deleted') {
-        await File.deleteMany({ path_display: entry.path_display });
-      } else if (entry['.tag'] === 'file') {
-        const { dir } = path.parse(entry.path_display);
-        const data = await dropbox.download(entry.id);
-        const mimeType = mime.lookup(entry.name);
-        const extension = mime.extension(mimeType);
-        const sha1 = crypto
-          .createHash('sha1')
-          .update(data)
-          .digest('hex');
-        const metaData = {
-          ...entry,
-          foreignKey: entry.id,
-          mimeType,
-          extension,
-          sha1,
-        };
-        delete metaData['.tag'];
-        const messageObject = {
-          ...event,
-          body: JSON.stringify(metaData),
-        };
-        await files.create(metaData);
-        const mapObj = { '{{dir}}': dir.replace('/',''), '{{extension}}': extension };
-        const eventMessage = await replaceAll(message, mapObj);
-        await messages.create(messageObject, { foreignKey: entry.id, app: 'dropbox', event: eventMessage });
-      }
-    });
-  await Promise.all(promises);
+  await entries.reduce(async (lastPromise, entry) => {
+    const accum = await lastPromise;
+    if (entry['.tag'] === 'deleted') {
+      await File.deleteMany({ path_display: entry.path_display });
+    } else if (entry['.tag'] === 'file') {
+      await saveFile(entry, event, message);
+    }
+    return [...accum, {}];
+  }, Promise.resolve([]));
 };
 
 const listFolders = async (url, body) => {
@@ -95,16 +100,17 @@ const executeChanges = async (account, event, message) => {
     );
     await saveEntries(data.entries, event, message);
   }
-  const promises = tokens.map(async (token) => {
+  await tokens.reduce(async (lastPromise, token) => {
+    const accum = await lastPromise;
     url = `${dropboxRpcEndpoint}2/files/list_folder/continue`;
     body = {
       cursor: token.token,
     };
     data = await listFolders(url, body);
-    await Token.findByIdAndUpdate(token._id, { token: data.cursor });
     await saveEntries(data.entries, event, message);
-  })
-  await Promise.all(promises);
+    await Token.findByIdAndUpdate(token._id, { token: data.cursor });
+    return [...accum, {}];
+  }, Promise.resolve([]));
 };
 
 exports.handler = async (event) => {
@@ -113,10 +119,12 @@ exports.handler = async (event) => {
     const { list_folder: listFolder } = data;
     const { accounts } = listFolder;
     const message = 'save_{{dir}}_{{extension}}_file';
-    const promises = accounts.map(async (account) => {
+
+    await accounts.reduce(async (lastPromise, account) => {
+      const accum = await lastPromise;
       await executeChanges(account, event, message);
-    });
-    await Promise.all(promises);
+      return [...accum, {}];
+    }, Promise.resolve([]));
     return {
       statusCode: 200,
       headers: {

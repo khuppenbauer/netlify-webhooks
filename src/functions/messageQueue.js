@@ -32,11 +32,11 @@ const executeMessage = async (data) => {
     event: data.event,
   };
   const subscriptions = await Subscription.find(subscriptionQuery);
-  const promises = subscriptions.map(async (subscription) => {
-    const promise = await executeSubscriptions(subscription, data);
-    return promise;
-  })
-  await Promise.all(promises);
+  await subscriptions.reduce(async (lastPromise, subscription) => {
+    const accum = await lastPromise;
+    await executeSubscriptions(subscription, data);
+    return [...accum, {}];
+  }, Promise.resolve([]));
 };
 
 exports.handler = async (event) => {
@@ -62,12 +62,12 @@ exports.handler = async (event) => {
       const filterQuery = event.queryStringParameters.filter;
       if (filterQuery) {
         const filter = JSON.parse(filterQuery);
-        const promises = filter.id.map(async (id) => {
+        await filter.id.reduce(async (lastPromise, id) => {
+          const accum = await lastPromise;
           const data = await Message.findById(id);
-          const promise = await executeMessage(data);
-          return promise;
-        });
-        await Promise.all(promises);
+          await executeMessage(data);
+          return [...accum, {}];
+        }, Promise.resolve([]));
       }
     }
 

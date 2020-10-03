@@ -49,13 +49,13 @@ const syncFiles = async () => {
         },
       },
     );
-    const promises = missingFiles
-      .map(async (item) => {
-        const { foreignKey, sha1, path_display: pathDisplay } = item;
-        const data = await dropbox.download(foreignKey);
-        await uploadFiles(res.data.id, sha1, pathDisplay, data);
-      });
-    await Promise.all(promises);
+    await missingFiles.reduce(async (lastPromise, item) => {
+      const accum = await lastPromise;
+      const { foreignKey, sha1, path_display: pathDisplay } = item;
+      const data = await dropbox.download(foreignKey);
+      await uploadFiles(res.data.id, sha1, pathDisplay, data);
+      return [...accum, {}];
+    }, Promise.resolve([]));
   }
   return res.data;
 };
