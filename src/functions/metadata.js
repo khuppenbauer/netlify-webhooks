@@ -111,6 +111,7 @@ const addMetaData = async (event) => {
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'POST') {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const data = await addMetaData(event);
     return {
       statusCode: 200,
