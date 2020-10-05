@@ -10,13 +10,15 @@ const isJson = (str) => {
 }
 
 exports.handler = async (event) => {
+  const page = parseInt(event.queryStringParameters.page, 10) || 1;
+  const perPage = parseInt(event.queryStringParameters.perPage, 10) || 30;
+  const limit = parseInt(event.queryStringParameters.limit, 10) || 0;
   switch (event.httpMethod) {
     case 'POST':
       if (isJson(event.body)) {
         return strava.import(event);
-      } else {
-        return strava.importAll(event);
       }
+      return strava.importAll(event, page, perPage, limit);
     /* Fallthrough case */
     default:
       return {

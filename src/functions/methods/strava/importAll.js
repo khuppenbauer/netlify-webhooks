@@ -40,7 +40,7 @@ const createMessage = async (event, activity) => {
   return message;
 };
 
-const getData = async (event, page, perPage) => {
+const getData = async (event, page, perPage, limit) => {
   const token = await getToken();
   const instance = axios.create({
     baseURL: `${stravaBaseUrl}`,
@@ -53,15 +53,15 @@ const getData = async (event, page, perPage) => {
     await createMessage(event, activity);
     return [...accum, {}];
   }, Promise.resolve([]));
-  if (activities.data.length > 0) {
+  if (activities.data.length > 0 && (limit === 0 || page < limit)) {
     const nextPage = page + 1;
-    await getData(event, nextPage, perPage);
+    await getData(event, nextPage, perPage, limit);
   }
 };
 
-module.exports = async (event) => {
+module.exports = async (event, page, perPage, limit) => {
   if (event.httpMethod === 'POST') {
-    await getData(event, 1, 30);
+    await getData(event, page, perPage, limit);
   }
   return {
     statusCode: 200,
