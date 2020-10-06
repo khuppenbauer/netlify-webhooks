@@ -7,9 +7,9 @@ const getSlug = require('speakingurl');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
 const Photo = require('../../models/photo');
-const activities = require('../activities');
-const messages = require('../messages');
-const photos = require('../photos');
+const activities = require('../../methods/activities');
+const messages = require('../../methods/messages');
+const photos = require('../../methods/photos');
 const dropbox = require('../dropbox');
 
 const stravaOAuthUrl = 'https://www.strava.com/oauth/token';
@@ -138,11 +138,9 @@ const processPhotos = async (event, activityId, activityPhotos) => {
   return activityPhotosUrl;
 };
 
-module.exports = async (event) => {
+const processActivity = async (event, message) => {
   const data = JSON.parse(event.body);
   const { object_id: foreignKey } = data;
-  const message = 'import_activity';
-
   const existingActivities = await Activity.find({
     foreignKey,
   });
@@ -180,4 +178,12 @@ module.exports = async (event) => {
   }
   await messages.create(event, { foreignKey, app: 'strava', event: message });
   return res;
+}
+
+module.exports = async (event, message) => {
+  await processActivity(event, message);
+  return {
+    statusCode: 200,
+    body: 'Ok',
+  };
 };
