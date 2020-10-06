@@ -1,11 +1,8 @@
 const axios = require('axios');
-const mongoose = require('mongoose');
-const db = require('../../database/mongodb');
-const File = require('../../models/file');
-const dropbox = require('../dropbox');
 
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
 const netlifyDeployEndpoint = `sites/${process.env.NETLIFY_CDN_ID}/deploys`
+const netlifyFilesEndpoint = `sites/${process.env.NETLIFY_CDN_ID}/files`
 const token = process.env.NETLIFY_ACCESS_TOKEN;
 
 const uploadFiles = async (id, sha1, pathDisplay, data) => {
@@ -23,12 +20,24 @@ const uploadFiles = async (id, sha1, pathDisplay, data) => {
   });
 };
 
-const syncFiles = async () => {
-  const files = await File.find({});
-  const filesData = files.reduce(
-    (acc, item) => (acc[item.path_display] = item.sha1, acc),
+const syncFiles = async (metaData) => {
+  const {
+    path_display: pathDisplay,
+    sha1,
+    fileData,
+  } = metaData;
+  const files = await axios({
+    method: 'get',
+    url: `${netlifyBaseUrl}${netlifyFilesEndpoint}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const filesData = files.data.reduce(
+    (acc, item) => (acc[item.path] = item.sha, acc),
     {},
   );
+  filesData[pathDisplay] = sha1;
   const body = {
     files: filesData,
   };
@@ -42,18 +51,9 @@ const syncFiles = async () => {
     data: JSON.stringify(body),
   });
   if (res.data.required) {
-    const missingFiles = await File.find(
-      {
-        sha1: {
-          $in: res.data.required,
-        },
-      },
-    );
-    await missingFiles.reduce(async (lastPromise, item) => {
+    await res.data.required.reduce(async (lastPromise, item) => {
       const accum = await lastPromise;
-      const { foreignKey, sha1, path_display: pathDisplay } = item;
-      const data = await dropbox.download(foreignKey);
-      await uploadFiles(res.data.id, sha1, pathDisplay, data);
+      await uploadFiles(res.data.id, sha1, pathDisplay, fileData);
       return [...accum, {}];
     }, Promise.resolve([]));
   }
@@ -61,7 +61,7 @@ const syncFiles = async () => {
 };
 
 module.exports = async (metaData) => {
-  await syncFiles();
+  await syncFiles(metaData);
   return {
     statusCode: 200,
     body: 'Ok',
