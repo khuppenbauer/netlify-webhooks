@@ -1,9 +1,9 @@
 const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const axios = require('axios');
-const db = require('./database/mongodb');
-const Track = require('./models/track');
-const messages = require('./methods/messages');
+const db = require('../../database/mongodb');
+const Track = require('../../models/track');
+const messages = require('../../methods/messages');
 
 const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
 const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
@@ -72,10 +72,9 @@ const calculateElevation = async (points) => {
   };
 }
 
-const addMetaData = async (event) => {
+const addMetaData = async (event, message) => {
   const body = JSON.parse(event.body);
   const { track } = body;
-  const message = 'add_metadata';
   const data = await Track.findById(track);
   const { coordinates } = data.geoJson.features[0].geometry;
   const points = {
@@ -109,20 +108,7 @@ const addMetaData = async (event) => {
   return metaData;
 };
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'POST') {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const data = await addMetaData(event);
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    };
-  }
-  return {
-    statusCode: 405,
-    body: 'Method Not Allowed',
-  };
+module.exports = async (event, message) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await addMetaData(event, message);
 };

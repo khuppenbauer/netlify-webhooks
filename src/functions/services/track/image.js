@@ -2,10 +2,10 @@ const dotenv = require('dotenv').config();
 const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
-const dropbox = require('./methods/dropbox');
-const messages = require('./methods/messages');
-const Track = require('./models/track');
-const File = require('./models/file');
+const dropbox = require('../dropbox');
+const messages = require('../../methods/messages');
+const Track = require('../../models/track');
+const File = require('../../models/file');
 
 const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
 const cdnUrl = process.env.NETLIFY_CDN_URL;
@@ -77,33 +77,19 @@ const dropboxUpload = async (data, filePath) => {
   await dropbox.upload(data, filePath);
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'POST') {
-    const body = JSON.parse(event.body);
-    const { gpxFile, name, track } = body;
-    const message = 'create_static_image';
-    const geoJson = await getGeoJson(gpxFile);
-    const data = await createImage(geoJson);
-    const { name: fileName } = path.parse(name);
-    const { ext: extension } = await fileType.fromBuffer(data);
-    const filePath = `/preview/${fileName}.${extension}`;
-    await dropboxUpload(data, filePath);
-    await Track.findByIdAndUpdate(track, { staticImage: filePath });
-    const messageObject = {
-      ...event,
-      body: JSON.stringify({ ...body, staticImage: filePath, path: filePath }),
-    };
-    await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: messageObject.body,
-    };
-  }
-  return {
-    statusCode: 405,
-    body: 'Method Not Allowed',
+module.exports = async (event, message) => {
+  const body = JSON.parse(event.body);
+  const { gpxFile, name, track } = body;
+  const geoJson = await getGeoJson(gpxFile);
+  const data = await createImage(geoJson);
+  const { name: fileName } = path.parse(name);
+  const { ext: extension } = await fileType.fromBuffer(data);
+  const filePath = `/preview/${fileName}.${extension}`;
+  await dropboxUpload(data, filePath);
+  await Track.findByIdAndUpdate(track, { staticImage: filePath });
+  const messageObject = {
+    ...event,
+    body: JSON.stringify({ ...body, staticImage: filePath, path: filePath }),
   };
+  await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
 };

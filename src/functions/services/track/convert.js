@@ -2,10 +2,10 @@ const dotenv = require('dotenv').config();
 const path = require('path');
 const mime = require('mime-types');
 const axios = require('axios');
-const dropbox = require('./methods/dropbox');
-const messages = require('./methods/messages');
-const Track = require('./models/track');
-const File = require('./models/file');
+const dropbox = require('../dropbox');
+const messages = require('../../methods/messages');
+const Track = require('../../models/track');
+const File = require('../../models/file');
 
 const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
 const cdnUrl = process.env.NETLIFY_CDN_URL;
@@ -58,47 +58,32 @@ const dropboxUpload = async (data, filePath) => {
   await dropbox.upload(data, filePath);
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod === 'POST') {
-    const {
-      outtype,
-      distance,
-      count,
-      error,
-      fileNamePostfix,
-    } = event.queryStringParameters;
-    const body = JSON.parse(event.body);
-    const { gpxFile, name, track } = body;
-    const message = 'convert_{{outtype}}';
+module.exports = async (event, message) => {
+  const {
+    outtype,
+    distance,
+    count,
+    error,
+    fileNamePostfix,
+  } = event.queryStringParameters;
+  const body = JSON.parse(event.body);
+  const { gpxFile, name, track } = body;
 
-    const data = await convert(gpxFile, outtype, distance, count, error);
-    const filePath = await getPath(name, fileNamePostfix, outtype);
-    await dropboxUpload(data, filePath);
+  const data = await convert(gpxFile, outtype, distance, count, error);
+  const filePath = await getPath(name, fileNamePostfix, outtype);
+  await dropboxUpload(data, filePath);
 
-    let messageBody = body;
-    if (outtype === 'geojson') {
-      await Track.findByIdAndUpdate(track, { geoJsonFile: filePath, geoJson: JSON.parse(data) });
-      messageBody = {
-        ...body,
-        geoJsonFile: filePath,
-      };
-    }
-    const messageObject = {
-      ...event,
-      body: JSON.stringify({ ...messageBody, path: filePath }),
-    };
-    await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message.replace(/{{outtype}}/gm, outtype) });
-
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: messageObject.body,
+  let messageBody = body;
+  if (outtype === 'geojson') {
+    await Track.findByIdAndUpdate(track, { geoJsonFile: filePath, geoJson: JSON.parse(data) });
+    messageBody = {
+      ...body,
+      geoJsonFile: filePath,
     };
   }
-  return {
-    statusCode: 405,
-    body: 'Method Not Allowed',
+  const messageObject = {
+    ...event,
+    body: JSON.stringify({ ...messageBody, path: filePath }),
   };
+  await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message.replace(/{{outtype}}/gm, outtype) });
 };
