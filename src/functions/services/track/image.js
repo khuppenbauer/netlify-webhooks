@@ -2,7 +2,7 @@ const dotenv = require('dotenv').config();
 const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
-const dropbox = require('../dropbox');
+const dropboxLib = require('../../libs/dropbox');
 const messages = require('../../methods/messages');
 const Track = require('../../models/track');
 const File = require('../../models/file');
@@ -72,9 +72,9 @@ const dropboxUpload = async (data, filePath) => {
     path_display: filePath,
   });
   if (existingFile.length > 0) {
-    await dropbox.delete(filePath);
+    await dropboxLib.delete(filePath);
   }
-  await dropbox.upload(data, filePath);
+  await dropboxLib.upload(data, filePath);
 }
 
 module.exports = async (event, message) => {

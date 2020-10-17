@@ -10,7 +10,7 @@ const Photo = require('../../models/photo');
 const activities = require('../../methods/activities');
 const messages = require('../../methods/messages');
 const photos = require('../../methods/photos');
-const dropbox = require('../dropbox');
+const dropboxLib = require('../../libs/dropbox');
 
 const stravaOAuthUrl = 'https://www.strava.com/oauth/token';
 const stravaBaseUrl = 'https://www.strava.com/api/v3/';
@@ -104,9 +104,9 @@ const processStream = async (stream, name, startTime, gpxFile) => {
   if (path !== gpxFile) {
     const gpx = await streamToGpx(stream, name, startTime);
     if (gpxFile) {
-      await dropbox.delete(gpxFile);
+      await dropboxLib.delete(gpxFile);
     }
-    await dropbox.upload(gpx, path);
+    await dropboxLib.upload(gpx, path);
   }
   return path;
 };

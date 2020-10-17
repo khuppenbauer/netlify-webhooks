@@ -49,6 +49,9 @@ const schema = new mongoose.Schema({
   source: {
     type: String,
   },
+  externalUrl: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 
