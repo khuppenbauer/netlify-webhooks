@@ -20,7 +20,7 @@ module.exports = async (event, data) => {
   try {
     result = {
       ...message,
-      status: 'success',
+      status: 'pending',
       headers: headers(event.headers),
       queryStringParameters: event.queryStringParameters,
       body: JSON.parse(event.body),

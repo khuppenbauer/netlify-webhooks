@@ -32,6 +32,9 @@ const executeMessage = async (data) => {
     event: data.event,
   };
   const subscriptions = await Subscription.find(subscriptionQuery);
+  if (subscriptions.length === 0) {
+    await Message.findByIdAndUpdate(data._id, { status: 'success' });
+  }
   await subscriptions.reduce(async (lastPromise, subscription) => {
     const accum = await lastPromise;
     await executeSubscriptions(subscription, data);
