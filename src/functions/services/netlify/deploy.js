@@ -2,6 +2,7 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
+const Message = require('../../models/message');
 const messages = require('../../methods/messages');
 const filesLib = require('../../libs/files');
 
@@ -44,7 +45,10 @@ const createUploadMessage = async (event, message, id, required) => {
       app: 'netlify',
       event: message,
     };
-    await messages.create(messageObject, messageData);
+    const existing = await Message.find(messageData);
+    if (existing.length === 0) {
+      await messages.create(messageObject, messageData);
+    }
     return [...accum, {}];
   }, Promise.resolve([]));
 }
