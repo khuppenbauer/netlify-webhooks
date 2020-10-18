@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Message = require('../../models/message');
+const pusherLib = require('../../libs/pusher');
 
 /* eslint-disable no-param-reassign */
 const headers = (obj) => Object.keys(obj).reduce((object, key) => {
@@ -26,6 +27,7 @@ module.exports = async (event, data) => {
       body: JSON.parse(event.body),
     };
     await Message.create(result);
+    await pusherLib.trigger('message', data);
   } catch (err) {
     const error = {
       ...message,

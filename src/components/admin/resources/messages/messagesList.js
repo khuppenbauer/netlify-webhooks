@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { Fragment } from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { makeStyles } from '@material-ui/core/styles';
 import { useMediaQuery } from '@material-ui/core';
+import { Fragment, useEffect } from 'react';
 import {
   List,
   Datagrid,
@@ -14,6 +14,7 @@ import {
   DeleteButton,
   Pagination,
   BulkDeleteButton,
+  useRefresh,
 } from 'react-admin';
 import StatusField from '../../components/StatusField';
 import MessagesFilter from './messagesFilter';
@@ -41,6 +42,7 @@ const useListStyles = makeStyles(theme => ({
     margin: '0.5rem 0',
   },
 }));
+const Pusher = require('pusher-js');
 
 const MessagesBulkActionButtons = (props) => (
   <Fragment>
@@ -93,6 +95,19 @@ const MessagesGrid = (props) => {
 
 const MessagesList = (props) => {
   const isSmall = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+  const key = process.env.REACT_APP_PUSHER_KEY;
+  const cluster = process.env.REACT_APP_PUSHER_CLUSTER;
+  const channel = process.env.REACT_APP_PUSHER_CHANNEL;
+  const refresh = useRefresh();
+  useEffect(() => {
+    const pusher = new Pusher(key, {
+      cluster,
+    });
+    const pusherChannel = pusher.subscribe(channel);
+    pusherChannel.bind('message', function(data) {
+      refresh();
+    });
+  });
   return (
     <List {...props}
       perPage={25}
