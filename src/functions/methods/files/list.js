@@ -10,7 +10,19 @@ const filteredResult = async (event) => {
   });
   const filterQuery = event.queryStringParameters.filter || '{}';
   const filter = JSON.parse(filterQuery);
-  const totalCount = await File.countDocuments(filter);
+  const { q } = filter;
+  let search = filter;
+  if (q) {
+    search = {
+      ...filter,
+      name: {
+        $regex: q,
+        $options: 'i',
+      },
+    };
+    delete search['q'];
+  }
+  const totalCount = await File.countDocuments(search);
   const page = event.queryStringParameters.page || 1;
   const perPage = event.queryStringParameters.perPage || collectionCount;
   const sort = event.queryStringParameters.sort || '-updatedAt';
@@ -20,7 +32,7 @@ const filteredResult = async (event) => {
     sort,
   };
   try {
-    result = await File.find(filter, null, options);
+    result = await File.find(search, null, options);
   } catch (err) {
     return {
       statusCode: 400,

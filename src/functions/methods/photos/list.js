@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Photo = require('../../models/photo');
+const Track = require('../../models/track');
 
 module.exports = async (event) => {
   let result;
@@ -9,7 +10,18 @@ module.exports = async (event) => {
     collectionCount = count;
   });
   const filterQuery = event.queryStringParameters.filter || '{}';
-  const filter = JSON.parse(filterQuery);
+  let filter = JSON.parse(filterQuery);
+  const { track } = filter;
+  if (track) {
+    const trackData = await Track.findById(track);
+    const { startTime, endTime } = trackData;
+    filter = {
+      shootingDate: {
+        $gte: startTime,
+        $lte: endTime,
+      },
+    };
+  }
   const totalCount = await Photo.count(filter);
   const page = event.queryStringParameters.page || 1;
   const perPage = event.queryStringParameters.perPage || collectionCount;

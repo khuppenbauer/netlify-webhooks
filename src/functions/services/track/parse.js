@@ -1,6 +1,8 @@
 const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const axios = require('axios');
+const tj = require('@tmcw/togeojson');
+const { DOMParser } = require('xmldom');
 const db = require('../../database/mongodb');
 const Track = require('../../models/track');
 const messages = require('../../methods/messages');
@@ -8,6 +10,18 @@ const messages = require('../../methods/messages');
 const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
 const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
 const geoLibBaseUrl = process.env.GEOLIB_FUNCTIONS_AP_BASE_URL;
+const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
+
+const parseXml = async (data) => {
+  const xml = new DOMParser().parseFromString(data, 'text/xml');
+  const { nodeName } = xml.documentElement;
+  if (nodeName === 'gpx') {
+    return tj.gpx(xml);
+  } else if (nodeName === 'kml') {
+    return tj.kml(xml);
+  }
+  return false;
+}
 
 const getGeoLibData = async (data, method) => {
   const res = await axios({
@@ -74,9 +88,12 @@ const calculateElevation = async (points) => {
 
 const addMetaData = async (event, message) => {
   const body = JSON.parse(event.body);
-  const { track } = body;
-  const data = await Track.findById(track);
-  const { coordinates } = data.geoJson.features[0].geometry;
+  const { track, gpxFile } = body;
+  const url = new URL(`${cdnUrl}${gpxFile}`).href;
+  const geoJson = await parseXml(await (await axios.get(url)).data);
+  const { properties, geometry } = geoJson.features[0];
+  const { coordinates } = geometry;
+  const { name, time, coordTimes } = properties;
   const points = {
     points: coordinates,
   }
@@ -88,6 +105,10 @@ const addMetaData = async (event, message) => {
   const endLocation = await getLocation(end);
   const elevation = await calculateElevation(coordinates);
   const metaData = {
+    name,
+    date: time,
+    startTime: coordTimes[0],
+    endTime: coordTimes[coordTimes.length - 1],
     distance,
     minCoords: { lat: bounds.minLat.toFixed(2), lon: bounds.minLng.toFixed(2) },
     maxCoords: { lat: bounds.maxLat.toFixed(2), lon: bounds.maxLng.toFixed(2) },

@@ -23,7 +23,7 @@ exports.handler = async (event) => {
       return subscriptions.create(event);
       /* PUT /.netlify/functions/subscriptions/123456 */
     case 'PUT':
-      if (segments.length === 1) {
+      if (segments.length === 1 || event.queryStringParameters.filter) {
         return subscriptions.update(event, segments[0]);
       }
       return {

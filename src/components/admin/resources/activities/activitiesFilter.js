@@ -6,7 +6,7 @@ import {
   useQuery,
 } from 'react-admin';
 
-const FilesFilter = (props) => {
+const ActivitiesFilter = (props) => {
   const facet = (field) => [
     {
       $group: {
@@ -47,14 +47,13 @@ const FilesFilter = (props) => {
     },
     {
       $facet: {
-        mimeType: facet('mimeType'),
-        extension: facet('extension'),
+        type: facet('type'),
       },
     },
   ];
   const { data } = useQuery({
     type: 'getAggregation',
-    resource: 'files',
+    resource: 'activities',
     payload: {
       query: {
         type: 'aggregate',
@@ -65,23 +64,17 @@ const FilesFilter = (props) => {
   if (data === undefined || data.length === 0) {
     return [];
   }
-
-  const { mimeType, extension } = data[0];
+  const { type } = data[0];
   return (
     <Filter {...props}>
       <SearchInput source="q" alwaysOn />
       <SelectInput
-        source="mimeType"
-        key="mimeType-filter"
-        choices={mimeType.map((mimeTypeItem) => ({ id: mimeTypeItem.value, name: `${mimeTypeItem.value} (${mimeTypeItem.count})` }))}
-      />
-      <SelectInput
-        source="extension"
-        key="extension-filter"
-        choices={extension.map((extensionItem) => ({ id: extensionItem.value, name: `${extensionItem.value} (${extensionItem.count})` }))}
+        source="type"
+        key="type-filter"
+        choices={type.map((typeItem) => ({ id: typeItem.value, name: `${typeItem.value} (${typeItem.count})` }))}
       />
     </Filter>
   );
 };
 
-export default FilesFilter;
+export default ActivitiesFilter;

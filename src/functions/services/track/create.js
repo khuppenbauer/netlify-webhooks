@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
+const path = require('path');
 const db = require('../../database/mongodb');
 const messages = require('../../methods/messages');
 const Track = require('../../models/track');
 
 module.exports = async (event, message) => {
   const data = JSON.parse(event.body);
-  const { name, path_display } = data;
-
+  const { path_display } = data;
+  const { name } = path.parse(path_display);
   const existingTrack = await Track.find({
     gpxFile: path_display,
   });

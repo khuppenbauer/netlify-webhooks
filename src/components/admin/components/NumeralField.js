@@ -8,12 +8,23 @@ const NumeralField = ({
   options,
   style,
 }) => {
-  const { from, to } = options;
-  const value = convert(record[source]).from(from).to(to);
-  const numberOptions = { style: 'unit', unit: 'kilometer' };
-  const numeral = new Intl.NumberFormat('de-DE', numberOptions).format(value.toFixed(2));
+  let unit;
+  let number;
+  const { from, to, precision } = options;
+  if (from === 's') {
+    number = new Date(record[source] * 1000).toISOString().substr(11, 8);
+    unit = '';
+  } else if (to) {
+    const value = convert(record[source]).from(from).to(to);
+    number = new Intl.NumberFormat('de-DE', options).format(value.toFixed(precision));
+    unit = to;
+  } else {
+    const value = convert(record[source]).from(from).toBest();
+    number = new Intl.NumberFormat('de-DE', options).format(value.val.toFixed(precision));
+    unit = value.unit;
+  }
   return (
-    <div style={style}>{numeral}</div>
+    <div style={style} className="MuiTypography-body2">{number} {unit}</div>
   );
 };
 

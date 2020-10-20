@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { Create, SimpleForm, TextInput, BooleanInput } from 'react-admin';
+import {
+  Create,
+  SimpleForm,
+  TextInput,
+  BooleanInput,
+} from 'react-admin';
 
 const SubscriptionsCreate = (props) => (
   <Create {...props}>

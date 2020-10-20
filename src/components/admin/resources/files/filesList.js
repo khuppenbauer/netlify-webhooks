@@ -1,41 +1,16 @@
 import * as React from 'react';
 import { Fragment } from 'react';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import { makeStyles } from '@material-ui/core/styles';
-import { useMediaQuery } from '@material-ui/core';
 import {
   List,
   Datagrid,
-  TextField,
-  DateField,
   Pagination,
   BulkDeleteButton,
-  DeleteButton,
+  ShowButton,
 } from 'react-admin';
 import FilesFilter from './filesFilter';
-
-const useListStyles = makeStyles(theme => ({
-  card: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    margin: '0.5rem 0',
-  },
-  cardTitleContent: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  cardContent: theme.typography.body1,
-  cardContentRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: '0.5rem 0',
-  },
-}));
+import DownloadField from '../../components/DownloadField';
+import ReferenceField from '../../components/ReferenceField';
+import NumeralField from '../../components/NumeralField';
 
 const FilesBulkActionButtons = (props) => (
   <Fragment>
@@ -43,31 +18,8 @@ const FilesBulkActionButtons = (props) => (
   </Fragment>
 );
 
-const FilesGrid = (props) => {
-  const { data, ids } = props;
-  const classes = useListStyles();
-  return (
-    <div style={{ margin: '1em' }}>
-      {ids.map(id => (
-        <Card key={id} className={classes.card}>
-          <CardHeader
-            title={
-              <div className={classes.cardTitleContent}>
-                <span>
-                  File:&nbsp;
-                  <TextField source="name" record={data[id]}/>
-                </span>
-              </div>
-            }
-          />
-        </Card>
-      ))}
-    </div>
-  );
-};
-
 const FilesList = (props) => {
-  const isSmall = useMediaQuery((theme) => theme.breakpoints.down('sm'));
+  const style = { whiteSpace: 'nowrap' };
   return (
     <List {...props}
       perPage={25}
@@ -76,18 +28,12 @@ const FilesList = (props) => {
       sort={{ field: 'updatedAt', order: 'DESC' }}
       bulkActionButtons={<FilesBulkActionButtons />}
     >
-      {isSmall ? (
-        <FilesGrid />
-      ) : (
-        <Datagrid>
-          <TextField source="name"/>
-          <TextField source="mimeType"/>
-          <TextField source="extension"/>
-          <TextField source="size"/>
-          <DateField source="updatedAt"/>
-          <DeleteButton/>
-        </Datagrid>
-      )}
+      <Datagrid>
+        <ReferenceField source="id" reference="files" label="Name" property="name" />
+        <NumeralField source="size" options={{ from: 'B' }} style={style}/>
+        <DownloadField source="path_display" label="Download" />
+        <ShowButton/>
+      </Datagrid>
     </List>
   );
 };

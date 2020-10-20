@@ -68,7 +68,9 @@ export default {
       filter: JSON.stringify({ id: params.ids }),
     };
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
-    return httpClient(url).then(({ json }) => ({ data: json }));
+    return httpClient(url).then(({ json }) => ({
+      data: json.map(record => ({ id: record._id, ...record }))
+    }));
   },
 
   getManyReference: (resource, params) => {
@@ -86,7 +88,7 @@ export default {
     const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
     return httpClient(url).then(({ headers, json }) => ({
-      data: json,
+      data: json.map(record => ({ id: record._id, ...record })),
       total: parseInt(headers.get('x-total-count').split('/').pop(), 10),
     }));
   },

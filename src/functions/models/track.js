@@ -94,6 +94,12 @@ const schema = new mongoose.Schema({
   visualization: {
     type: String,
   },
+  startTime: {
+    type: Date,
+  },
+  endTime: {
+    type: Date,
+  },
 }, schemaOptions);
 const Track = mongoose.model('track', schema);
 

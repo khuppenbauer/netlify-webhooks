@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { Edit, SimpleForm, TextInput, BooleanInput } from 'react-admin';
+import {
+  Edit,
+  SimpleForm,
+  TextInput,
+  BooleanInput,
+} from 'react-admin';
 
 const SubscriptionsEdit = (props) => (
   <Edit title="Subscription" {...props}>

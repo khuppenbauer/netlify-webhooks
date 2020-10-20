@@ -5,9 +5,13 @@ exports.handler = async (event) => {
   const segments = path.split('/').filter((e) => e);
   switch (event.httpMethod) {
     case 'GET':
-      /* GET /.netlify/functions/messages */
+      /* GET /.netlify/functions/files */
       if (segments.length === 0) {
         return files.list(event);
+      }
+      /* GET /.netlify/functions/files/123456 */
+      if (segments.length === 1) {
+        return files.read(event, segments[0]);
       }
       return {
         statusCode: 500,
