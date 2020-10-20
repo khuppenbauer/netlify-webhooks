@@ -23,18 +23,21 @@ const MessagesBulkActionButtons = (props) => (
 );
 
 const MessagesList = (props) => {
+  const pusherActive = process.env.REACT_APP_PUSHER_ACTIVE;
   const key = process.env.REACT_APP_PUSHER_KEY;
   const cluster = process.env.REACT_APP_PUSHER_CLUSTER;
   const channel = process.env.REACT_APP_PUSHER_CHANNEL;
   const refresh = useRefresh();
   useEffect(() => {
-    const pusher = new Pusher(key, {
-      cluster,
-    });
-    const pusherChannel = pusher.subscribe(channel);
-    pusherChannel.bind('message', function(data) {
-      refresh();
-    });
+    if (pusherActive) {
+      const pusher = new Pusher(key, {
+        cluster,
+      });
+      const pusherChannel = pusher.subscribe(channel);
+      pusherChannel.bind('message', function(data) {
+        refresh();
+      });
+    }
   });
   return (
     <List {...props}
