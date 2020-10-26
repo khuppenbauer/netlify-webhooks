@@ -19,7 +19,7 @@ import MapboxField from '../../components/MapboxField';
 const TracksShow = (props) => {
   const style = { whiteSpace: 'nowrap' };
   return (
-    <Show title="track" {...props}>
+    <Show title="Track" {...props}>
       <TabbedShowLayout>
         <Tab label="Data">
           <TextField source="name" />

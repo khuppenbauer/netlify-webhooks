@@ -12,7 +12,7 @@ import MapboxField from '../../components/MapboxField';
 
 const FeaturesShow = (props) => {
   return (
-    <Show title="track" {...props}>
+    <Show title="Feature" {...props}>
       <TabbedShowLayout>
         <Tab label="Data">
           <TextField source="name" />

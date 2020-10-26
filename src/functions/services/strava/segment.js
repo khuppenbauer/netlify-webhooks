@@ -1,5 +1,4 @@
 const dotenv = require('dotenv').config();
-const axios = require('axios');
 const getSlug = require('speakingurl');
 const features = require('../../methods/features');
 const messages = require('../../methods/messages');
@@ -55,8 +54,14 @@ const createFeature = async (segment, geoJson, gpxFile, bounds) => {
       },
       geoJson,
       gpxFile,
-      minCoords: { lat: parseFloat(bounds.minLat.toFixed(6)), lon: parseFloat(bounds.minLng.toFixed(6)) },
-      maxCoords: { lat: parseFloat(bounds.maxLat.toFixed(6)), lon: parseFloat(bounds.maxLng.toFixed(6)) },
+      minCoords: {
+        lat: parseFloat(bounds.minLat.toFixed(6)),
+        lon: parseFloat(bounds.minLng.toFixed(6)),
+      },
+      maxCoords: {
+        lat: parseFloat(bounds.maxLat.toFixed(6)),
+        lon: parseFloat(bounds.maxLng.toFixed(6)),
+      },
     };
     return features.create(feature);
   }
