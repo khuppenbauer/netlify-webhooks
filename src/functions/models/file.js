@@ -55,6 +55,15 @@ const schema = new mongoose.Schema({
   externalUrl: {
     type: String,
   },
+  dateTimeOriginal: {
+    type: Date,
+  },
+  imageWidth: {
+    type: Number,
+  },
+  imageHeight: {
+    type: Number,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 

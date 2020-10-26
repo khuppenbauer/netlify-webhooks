@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const mime = require('mime-types');
 const path = require('path');
+const exifr = require('exifr');
 const dropboxLib = require('../../libs/dropbox');
 const filesLib = require('../../libs/files');
 const files = require('../../methods/files');
@@ -13,13 +14,26 @@ const saveFile = async (event, message, data) => {
   const isImage = mimeType.startsWith('image');
   let fileData;
   let externalUrl;
+  let imageData;
 
   if (isImage) {
     externalUrl = await dropboxLib.link(id);
     fileData = await filesLib.data(externalUrl, 'binary');
+    const exif = await exifr.parse(fileData);
+    const {
+      DateTimeOriginal: dateTimeOriginal,
+      ExifImageWidth: imageWidth,
+      ExifImageHeight: imageHeight,
+    } = exif;
+    imageData = {
+      dateTimeOriginal,
+      imageWidth,
+      imageHeight,
+    };
   } else {
     fileData = await dropboxLib.download(id);
   }
+
   const sha1 = crypto
     .createHash('sha1')
     .update(fileData)
@@ -34,6 +48,7 @@ const saveFile = async (event, message, data) => {
     sha1,
     externalUrl,
     folder,
+    ...imageData,
   };
   await files.create(event, message, metaData);
 }
