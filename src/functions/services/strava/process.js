@@ -1,108 +1,23 @@
 const dotenv = require('dotenv').config();
-const axios = require('axios');
-const mongoose = require('mongoose');
-const xmlBuilder = require('xmlbuilder');
-const moment = require('moment');
 const getSlug = require('speakingurl');
+const moment = require('moment');
+const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
-const Photo = require('../../models/photo');
+const Feature = require('../../models/feature');
 const activities = require('../../methods/activities');
 const messages = require('../../methods/messages');
-const photos = require('../../methods/photos');
+const stravaLib = require('../../libs/strava');
 const dropboxLib = require('../../libs/dropbox');
+const coordinatesLib = require('../../libs/coordinates');
 
-const stravaOAuthUrl = 'https://www.strava.com/oauth/token';
-const stravaBaseUrl = 'https://www.strava.com/api/v3/';
-const stravaGrantType = 'refresh_token';
-const stravaImageSize = 800;
-
-const getToken = async () => {
-  const res = await axios({
-    method: 'post',
-    url: stravaOAuthUrl,
-    data: {
-      client_id: process.env.STRAVA_CLIENT_ID,
-      client_secret: process.env.STRAVA_CLIENT_SECRET,
-      refresh_token: process.env.STRAVA_REFRESH_TOKEN,
-      grant_type: stravaGrantType,
-    },
-  });
-  const { access_token: accessToken } = res.data;
-  return accessToken;
-};
-
-const getData = async (foreignKey) => {
-  const token = await getToken();
-  const instance = axios.create({
-    baseURL: `${stravaBaseUrl}`,
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  const activity = await instance.get(`activities/${foreignKey}`);
-  if (activity.status !== 200) {
-    return {};
-  }
-
-  const activityStream = await instance.get(`activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`);
-  const activityPhotos = await instance.get(`activities/${foreignKey}/photos?size=${stravaImageSize}`);
-  return {
-    activity: activity.data,
-    stream: activityStream.data,
-    photos: activityPhotos.data,
-  };
-};
-
-const streamToGpx = async (stream, name, startTime) => {
-  const gpx = xmlBuilder
-    .create('gpx', {
-      encoding: 'UTF-8',
-    })
-    .att('creator', 'StravaGPX Android')
-    .att('version', '1.1')
-    .att('xmlns', 'http://www.topografix.com/GPX/1/1')
-    .att('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
-    .att('xsi:schemaLocation', 'http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd');
-
-  const metadata = gpx.ele('metadata');
-  if (startTime) {
-    metadata.ele('time', startTime);
-  }
-
-  const trk = gpx.ele('trk');
-  if (name) {
-    trk.ele('name', name);
-  }
-
-  const trkseg = trk.ele('trkseg');
-  for (let i = 0; i < stream.latlng.original_size; i++) {
-    const time = moment(startTime).add(stream.time.data[i], 's');
-    const trkpt = trkseg
-      .ele('trkpt')
-      .att('lat', stream.latlng.data[i][0].toFixed(6))
-      .att('lon', stream.latlng.data[i][1].toFixed(6));
-    trkpt.ele('ele', stream.altitude.data[i]);
-    trkpt.ele('time', time.utc().format());
-  }
-
-  const xml = gpx.end({
-    allowEmpty: true,
-    indent: '  ',
-    newline: '\n',
-    pretty: true,
-  });
-
-  return xml;
-}
-
-const processStream = async (stream, name, startTime, gpxFile) => {
+const saveGpx = async (gpx, name, startTime, gpxFile) => {
   const fileName = `${moment(startTime).format('YYYY-MM-DD')}-${name}`;
   const cleanFileName = getSlug(fileName, {
     maintainCase: true,
   });
   const path = `/tracks/${cleanFileName}.gpx`;
   if (path !== gpxFile) {
-    const gpx = await streamToGpx(stream, name, startTime);
     if (gpxFile) {
       await dropboxLib.delete(gpxFile);
     }
@@ -111,34 +26,28 @@ const processStream = async (stream, name, startTime, gpxFile) => {
   return path;
 };
 
-const processPhotos = async (event, activityId, activityPhotos) => {
-  const activityPhotosUrl = activityPhotos.reduce(
-    (acc, item) => (acc[item.unique_id] = item.urls[stravaImageSize], acc),
-    {},
-  );
-
-  const existingPhotos = await Photo.find({
-    activity: activityId,
-  });
-
-  existingPhotos.map((existingPhoto) => {
-    if (!activityPhotosUrl[existingPhoto.foreignKey]) {
-      photos.delete(event, existingPhoto._id);
+const processSegments = async (event, segmentsMessage, segmentEfforts, foreignKey) => {
+  const messageData = {
+    foreignKey,
+    app: 'strava',
+    event: segmentsMessage,
+  }
+  await segmentEfforts.reduce(async (lastPromise, segmentEffort) => {
+    const accum = await lastPromise;
+    const { segment } = segmentEffort;
+    const existing = await Feature.find({ foreignKey: segment.id });
+    if (existing.length === 0) {
+      const messageObject = {
+        ...event,
+        body: JSON.stringify(segment),
+      };
+      await messages.create(messageObject, messageData);
     }
-  });
+    return [...accum, {}];
+  }, Promise.resolve([]));
+}
 
-  activityPhotos.map((activityPhoto) => (
-    photos.create(event, {
-      activity: activityId,
-      foreignKey: activityPhoto.unique_id,
-      url: activityPhoto.urls[stravaImageSize],
-      shootingDate: activityPhoto.created_at,
-    })
-  ));
-  return activityPhotosUrl;
-};
-
-const processActivity = async (event, message) => {
+const processActivity = async (event, message, segmentsMessage) => {
   const data = JSON.parse(event.body);
   const { object_id: foreignKey } = data;
   const existingActivities = await Activity.find({
@@ -155,21 +64,28 @@ const processActivity = async (event, message) => {
     activityId = existingActivities[0]._id;
     activityGpxFile = existingActivities[0].gpxFile;
   }
-  const {
-    activity: activityData,
-    stream: activityStream,
-    photos: activityPhotos,
-  } = await getData(foreignKey);
-  const { name, start_date: startTime } = activityData;
-  const gpxFile = await processStream(activityStream, name, startTime, activityGpxFile);
-  const photoUrls = await processPhotos(event, activityId, activityPhotos);
+
+  const activityData = await stravaLib.api(`activities/${foreignKey}`);
+  const { name, start_date: startTime, segment_efforts: segmentEfforts } = activityData;
+  await processSegments(event, segmentsMessage, segmentEfforts, foreignKey);
+  const url = `activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`;
+  const stream = await stravaLib.api(url);
+  const points = stream.latlng.data.map((e, index) => [
+    parseFloat(e[1].toFixed(6)),
+    parseFloat(e[0].toFixed(6)),
+  ]);
+  const bounds = await coordinatesLib.geoLib({ points }, 'getBounds');
+  const gpx = await stravaLib.streams(stream, bounds, name, startTime, foreignKey, 'activities', 'gpx');
+  const gpxFile = await saveGpx(gpx, name, startTime, activityGpxFile);
+  const photos = await stravaLib.photos(event, activityId, foreignKey);
   const activity = {
     ...activityData,
     gpxFile,
-    photos: photoUrls,
+    photos,
     foreignKey,
     _id: activityId,
   };
+
   let res;
   if (type === 'create') {
     res = activities.create(activity);
@@ -180,8 +96,8 @@ const processActivity = async (event, message) => {
   return res;
 }
 
-module.exports = async (event, message) => {
-  await processActivity(event, message);
+module.exports = async (event, message, segmentsMessage) => {
+  await processActivity(event, message, segmentsMessage);
   return {
     statusCode: 200,
     body: 'Ok',

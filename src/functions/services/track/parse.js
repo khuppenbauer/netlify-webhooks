@@ -6,10 +6,8 @@ const { DOMParser } = require('xmldom');
 const db = require('../../database/mongodb');
 const Track = require('../../models/track');
 const messages = require('../../methods/messages');
+const coordinatesLib = require('../../libs/coordinates');
 
-const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
-const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
-const geoLibBaseUrl = process.env.GEOLIB_FUNCTIONS_AP_BASE_URL;
 const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
 
 const parseXml = async (data) => {
@@ -21,35 +19,6 @@ const parseXml = async (data) => {
     return tj.kml(xml);
   }
   return false;
-}
-
-const getGeoLibData = async (data, method) => {
-  const res = await axios({
-    method: 'post',
-    url: `${geoLibBaseUrl}${method}`,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify(data),
-  });
-  return res.data;
-};
-
-const getLocation = async (loc) => {
-  const params = {
-    key: locationServiceAccessToken,
-    lat: loc[1],
-    lon: loc[0],
-    format: 'json',
-    'accept-language': 'de',
-    normalizecity: 1,
-  };
-  const queryString = Object.keys(params).map((key) => (key) + '=' + params[key]).join('&');
-  const res = await axios({
-    method: 'get',
-    url: `${locationServiceBaseUrl}reverse.php?${queryString}`,
-  });
-  return res.data;
 }
 
 const calculateElevation = async (points) => {
@@ -99,10 +68,10 @@ const addMetaData = async (event, message) => {
   }
   const start = coordinates[0];
   const end = coordinates[coordinates.length - 1];
-  const bounds = await getGeoLibData(points, 'getBounds');
-  const distance = await getGeoLibData(points, 'getPathLength');
-  const startLocation = await getLocation(start);
-  const endLocation = await getLocation(end);
+  const bounds = await coordinatesLib.geoLib(points, 'getBounds');
+  const distance = await coordinatesLib.geoLib(points, 'getPathLength');
+  const startLocation = await coordinatesLib.location(start[1], start[0]);
+  const endLocation = await coordinatesLib.location(end[1], end[0]);
   const elevation = await calculateElevation(coordinates);
   const metaData = {
     name,
@@ -110,10 +79,22 @@ const addMetaData = async (event, message) => {
     startTime: coordTimes[0],
     endTime: coordTimes[coordTimes.length - 1],
     distance,
-    minCoords: { lat: bounds.minLat.toFixed(2), lon: bounds.minLng.toFixed(2) },
-    maxCoords: { lat: bounds.maxLat.toFixed(2), lon: bounds.maxLng.toFixed(2) },
-    startCoords: { lat: start[1].toFixed(2), lon: start[0].toFixed(2) },
-    endCoords: { lat: end[1].toFixed(2), lon: end[0].toFixed(2) },
+    minCoords: {
+      lat: parseFloat(bounds.minLat.toFixed(6)),
+      lon: parseFloat(bounds.minLng.toFixed(6)),
+    },
+    maxCoords: {
+      lat: parseFloat(bounds.maxLat.toFixed(6)),
+      lon: parseFloat(bounds.maxLng.toFixed(6)),
+    },
+    startCoords: {
+      lat: parseFloat(start[1].toFixed(2)),
+      lon: parseFloat(start[0].toFixed(2)),
+    },
+    endCoords: {
+      lat: parseFloat(end[1].toFixed(2)),
+      lon: parseFloat(end[0].toFixed(2)),
+    },
     startElevation: start[2] ? start[2].toFixed(0) : 0,
     endElevation: end[2] ? end[2].toFixed(0) : 0,
     startCity: startLocation.address.city,

@@ -9,6 +9,7 @@ import activities from './components/admin/resources/activities';
 import tracks from './components/admin/resources/tracks';
 import photos from './components/admin/resources/photos';
 import files from './components/admin/resources/files';
+import features from './components/admin/resources/features';
 
 const App = () => (
   <Admin dataProvider={dataProvider}>
@@ -18,6 +19,7 @@ const App = () => (
     <Resource name="tracks" {...tracks} />
     <Resource name="photos" {...photos} />
     <Resource name="files" {...files} />
+    <Resource name="features" {...features} />
   </Admin>
 );
 

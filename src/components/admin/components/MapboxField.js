@@ -23,7 +23,7 @@ const MapboxField = ({ record }) => {
       container: mapNode.current,
       style: 'mapbox://styles/mapbox/outdoors-v11',
       bounds,
-      fitBoundsOptions: (bounds, { padding: 50 }),
+      fitBoundsOptions: (bounds, { padding: 100 }),
     })
     mapRef.current = map
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
