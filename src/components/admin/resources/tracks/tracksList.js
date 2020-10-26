@@ -2,7 +2,9 @@ import * as React from 'react';
 import {
   List,
   Datagrid,
-  NumberField,Pagination,
+  NumberField,
+  Pagination,
+  DateField,
 } from 'react-admin';
 import NumeralField from '../../components/NumeralField';
 import ReferenceField from '../../components/ReferenceField';
@@ -20,7 +22,8 @@ const TracksList = (props) => {
       sort={{ field: 'createdAt', order: 'DESC' }}
     >
       <Datagrid>
-        <ReferenceField source="id" reference="tracks" label="Name" property="name" />
+        <ReferenceField source="id" reference="tracks" label="Name" property="name" sortBy="name" />
+        <DateField source="date" />
         <NumeralField source="distance" options={{ from: 'm', precision: 2 }} style={style}/>
         <NumberField source="totalElevationGain" options={{ style: 'unit', unit: 'meter' }} style={style} />
         <NumberField source="totalElevationLoss" options={{ style: 'unit', unit: 'meter' }} style={style} />

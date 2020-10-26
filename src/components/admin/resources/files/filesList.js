@@ -29,7 +29,7 @@ const FilesList = (props) => {
       bulkActionButtons={<FilesBulkActionButtons />}
     >
       <Datagrid>
-        <ReferenceField source="id" reference="files" label="Name" property="name" />
+        <ReferenceField source="id" reference="files" label="Name" property="name" sortBy="name" />
         <NumeralField source="size" options={{ from: 'B' }} style={style}/>
         <DownloadField source="path_display" label="Download" />
         <ShowButton/>

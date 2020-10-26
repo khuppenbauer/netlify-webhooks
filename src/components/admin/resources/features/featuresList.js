@@ -19,7 +19,7 @@ const FeaturesList = (props) => {
       sort={{ field: 'createdAt', order: 'DESC' }}
     >
       <Datagrid>
-        <ReferenceField source="id" reference="features" label="Name" property="name" />
+        <ReferenceField source="id" reference="features" label="Name" property="name" sortBy="name" />
         <TextField source="type"/>
         <TextField source="source"/>
         <DownloadField source="gpxFile" label="Download" />

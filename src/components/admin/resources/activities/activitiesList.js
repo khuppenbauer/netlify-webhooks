@@ -24,7 +24,7 @@ const ActivitiesList = (props) => {
     >
       <Datagrid>
         <DateField source="start_date" />
-        <ReferenceField source="id" reference="activities" label="Name" property="name" />
+        <ReferenceField source="id" reference="activities" label="Name" property="name" sortBy="name" />
         <TextField source="type" />
         <NumeralField source="distance" options={{ from: 'm', precision: 2 }} style={style}/>
         <NumberField source="total_elevation_gain" options={{ style: 'unit', unit: 'meter' }} style={style} />
