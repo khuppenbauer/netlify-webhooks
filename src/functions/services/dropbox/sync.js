@@ -1,11 +1,12 @@
 const crypto = require('crypto');
 const mime = require('mime-types');
+const path = require('path');
 const dropboxLib = require('../../libs/dropbox');
 const filesLib = require('../../libs/files');
 const files = require('../../methods/files');
 
 const saveFile = async (event, message, data) => {
-  const { id, name } = data;
+  const { id, name, path_display } = data;
 
   const mimeType = mime.lookup(name);
   const extension = mime.extension(mimeType);
@@ -24,6 +25,7 @@ const saveFile = async (event, message, data) => {
     .update(fileData)
     .digest('hex');
 
+  const { dir: folder } = path.parse(path_display);
   const metaData = {
     ...data,
     foreignKey: id,
@@ -31,6 +33,7 @@ const saveFile = async (event, message, data) => {
     extension,
     sha1,
     externalUrl,
+    folder,
   };
   await files.create(event, message, metaData);
 }

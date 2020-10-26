@@ -16,6 +16,9 @@ const schema = new mongoose.Schema({
   path_display: {
     type: String,
   },
+  folder: {
+    type: String,
+  },
   foreignKey: {
     type: String,
   },

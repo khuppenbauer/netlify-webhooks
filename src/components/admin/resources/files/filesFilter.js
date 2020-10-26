@@ -47,7 +47,7 @@ const FilesFilter = (props) => {
     },
     {
       $facet: {
-        mimeType: facet('mimeType'),
+        folder: facet('folder'),
         extension: facet('extension'),
       },
     },
@@ -66,14 +66,14 @@ const FilesFilter = (props) => {
     return [];
   }
 
-  const { mimeType, extension } = data[0];
+  const { folder, extension } = data[0];
   return (
     <Filter {...props}>
       <SearchInput source="q" alwaysOn />
       <SelectInput
-        source="mimeType"
-        key="mimeType-filter"
-        choices={mimeType.map((mimeTypeItem) => ({ id: mimeTypeItem.value, name: `${mimeTypeItem.value} (${mimeTypeItem.count})` }))}
+        source="folder"
+        key="folder-filter"
+        choices={folder.map((folderItem) => ({ id: folderItem.value, name: `${folderItem.value} (${folderItem.count})` }))}
       />
       <SelectInput
         source="extension"
