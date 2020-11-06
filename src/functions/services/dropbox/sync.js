@@ -20,16 +20,18 @@ const saveFile = async (event, message, data) => {
     externalUrl = await dropboxLib.link(id);
     fileData = await filesLib.data(externalUrl, 'binary');
     const exif = await exifr.parse(fileData);
-    const {
-      DateTimeOriginal: dateTimeOriginal,
-      ExifImageWidth: imageWidth,
-      ExifImageHeight: imageHeight,
-    } = exif;
-    imageData = {
-      dateTimeOriginal,
-      imageWidth,
-      imageHeight,
-    };
+    if (exif) {
+      const {
+        DateTimeOriginal: dateTimeOriginal,
+        ExifImageWidth: imageWidth,
+        ExifImageHeight: imageHeight,
+      } = exif;
+      imageData = {
+        dateTimeOriginal,
+        imageWidth,
+        imageHeight,
+      };
+    }
   } else {
     fileData = await dropboxLib.download(id);
   }
