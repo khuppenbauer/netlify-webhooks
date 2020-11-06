@@ -69,6 +69,7 @@ const createFeature = async (segment, geoJson, gpxFile, bounds) => {
 }
 
 const processSegments = async (event, message) => {
+  const { includeGpx } = event.queryStringParameters;
   const segment = JSON.parse(event.body);
   const {
     id,
@@ -83,7 +84,11 @@ const processSegments = async (event, message) => {
   const bounds = await coordinatesLib.geoLib({ points }, 'getBounds');
   const geoJson = await stravaLib.streams(stream, bounds, name, null, id, 'segment', 'geojson');
   const gpx = await stravaLib.streams(stream, bounds, name, null, id, 'segments', 'gpx');
-  const gpxFile = await saveGpx(gpx, name);
+  let gpxFile;
+  if (includeGpx === 'true') {
+    gpxFile = await saveGpx(gpx, name);
+  }
+  console.log([includeGpx, gpxFile]);
   if (geoJson) {
     await createFeature(segment, geoJson, gpxFile, bounds);
   }
