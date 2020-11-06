@@ -1,12 +1,51 @@
 import React, { useEffect, useRef } from 'react';
+
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const mapboxToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
-const MapboxField = ({ record }) => {
-  const { minCoords, maxCoords, geoJson } = record;
-  const bounds = [minCoords, maxCoords];
+const getMapData = (ids, data) => {
+  const minLon = [];
+  const minLat = [];
+  const maxLat = [];
+  const maxLon = [];
+  const features = ids.map((id) => {
+    const { geoJson } = data[id];
+    const {
+      type,
+      geometry,
+      properties,
+      bbox,
+    } = geoJson.features[0];
+    minLon.push(bbox[0]);
+    minLat.push(bbox[1]);
+    maxLon.push(bbox[2]);
+    maxLat.push(bbox[3]);
+    const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    return {
+      type,
+      geometry,
+      properties: { ...properties, color },
+    };
+  });
+  return {
+    geoJson: {
+      features,
+      type: 'FeatureCollection',
+    },
+    minCoords: {
+      lat: Math.min(...minLat),
+      lon: Math.min(...minLon),
+    },
+    maxCoords: {
+      lat: Math.max(...maxLat),
+      lon: Math.max(...maxLon),
+    },
+  };
+}
+
+const MapboxField = ({ record, ids, data }) => {
   // this ref holds the map DOM node so that we can pass it into Mapbox GL
   const mapNode = useRef(null)
 
@@ -17,13 +56,30 @@ const MapboxField = ({ record }) => {
   // this allows us to construct it only once at the time the
   // component is constructed.
   useEffect(() => {
+    let minCoords;
+    let maxCoords;
+    let geoJson;
+    let padding;
+    if (record) {
+      minCoords = record.minCoords;
+      maxCoords = record.maxCoords;
+      geoJson = record.geoJson;
+      padding = 100;
+    } else if (ids && data) {
+      const res = getMapData(ids, data);
+      minCoords = res.minCoords;
+      maxCoords = res.maxCoords;
+      geoJson = res.geoJson;
+      padding = 10;
+    }
+    const bounds = [minCoords, maxCoords];
     // Token must be set before constructing map
     mapboxgl.accessToken = mapboxToken
     const map = new mapboxgl.Map({
       container: mapNode.current,
       style: 'mapbox://styles/mapbox/outdoors-v11',
       bounds,
-      fitBoundsOptions: (bounds, { padding: 100 }),
+      fitBoundsOptions: (bounds, { padding }),
     })
     mapRef.current = map
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
@@ -43,7 +99,7 @@ const MapboxField = ({ record }) => {
           'line-cap': 'round',
         },
         paint: {
-          'line-color': 'red',
+          'line-color': ['get', 'color'],
           'line-width': 2,
         },
       });
@@ -56,7 +112,7 @@ const MapboxField = ({ record }) => {
     return () => {
       map.remove();
     };
-  }, [bounds, geoJson])
+  }, [record, ids, data])
 
   // You can use other `useEffect` hooks to update the state of the map
   // based on incoming props.  Just beware that you might need to add additional
