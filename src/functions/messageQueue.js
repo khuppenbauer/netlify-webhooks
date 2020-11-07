@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const db = require('./database/mongodb');
 const Subscription = require('./models/subscription');
+const Log = require('./models/log');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
 
@@ -9,7 +10,25 @@ const executeSubscriptions = async (event, subscription, data) => {
   let status;
   const message = data.message !== undefined ? data.message : [];
   try {
-    const res = await axios.post(subscription.url, JSON.stringify(data.body));
+    const startTime = new Date().getTime();
+    const { url } = subscription;
+    const urlObject = new URL(url);
+    const res = await axios.post(url, JSON.stringify(data.body));
+    const searchParams = new URLSearchParams(urlObject.search);
+    await Log.create(
+      {
+        _id: mongoose.Types.ObjectId(),
+        status: res.status,
+        statusText: res.statusText,
+        url,
+        urlOrigin: urlObject.origin,
+        urlPathname: urlObject.pathname,
+        urlAction: searchParams.get('action'),
+        method: res.config.method,
+        responseTime: new Date().getTime() - startTime,
+        subscription,
+      },
+    );
     status = 'success';
     message.push({
       subscription,
