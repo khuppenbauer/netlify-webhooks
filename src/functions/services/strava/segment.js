@@ -1,7 +1,6 @@
 const dotenv = require('dotenv').config();
 const getSlug = require('speakingurl');
 const features = require('../../methods/features');
-const messages = require('../../methods/messages');
 const stravaLib = require('../../libs/strava');
 const dropboxLib = require('../../libs/dropbox');
 const coordinatesLib = require('../../libs/coordinates');
@@ -68,9 +67,7 @@ const createFeature = async (segment, geoJson, gpxFile, bounds) => {
   return false;
 }
 
-const processSegments = async (event, message) => {
-  const { includeGpx } = event.queryStringParameters;
-  const segment = JSON.parse(event.body);
+const processSegment = async (segment, saveSegmentsGpx) => {
   const {
     id,
     name,
@@ -83,22 +80,16 @@ const processSegments = async (event, message) => {
   ]);
   const bounds = await coordinatesLib.geoLib({ points }, 'getBounds');
   const geoJson = await stravaLib.streams(stream, bounds, name, null, id, 'segment', 'geojson');
-  const gpx = await stravaLib.streams(stream, bounds, name, null, id, 'segments', 'gpx');
   let gpxFile;
-  if (includeGpx === 'true') {
+  if (saveSegmentsGpx === 'true') {
+    const gpx = await stravaLib.streams(stream, bounds, name, null, id, 'segments', 'gpx');
     gpxFile = await saveGpx(gpx, name);
   }
-  console.log([includeGpx, gpxFile]);
   if (geoJson) {
     await createFeature(segment, geoJson, gpxFile, bounds);
   }
-  await messages.create(event, { foreignKey: id, app: 'strava', event: message });
 }
 
-module.exports = async (event, message) => {
-  await processSegments(event, message);
-  return {
-    statusCode: 200,
-    body: 'Ok',
-  };
+module.exports = async (segment, saveSegmentsGpx) => {
+  await processSegment(segment, saveSegmentsGpx);
 };

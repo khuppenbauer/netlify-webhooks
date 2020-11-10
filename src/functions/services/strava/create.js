@@ -40,8 +40,4 @@ module.exports = async (event, message) => {
   const perPage = parseInt(event.queryStringParameters.perPage, 10) || 30;
   const limit = parseInt(event.queryStringParameters.limit, 10) || 0;
   await getActivities(event, message, page, perPage, limit);
-  return {
-    statusCode: 200,
-    body: 'Ok',
-  };
 };

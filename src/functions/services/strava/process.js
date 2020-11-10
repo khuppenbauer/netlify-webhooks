@@ -4,7 +4,6 @@ const moment = require('moment');
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
-const Feature = require('../../models/feature');
 const activities = require('../../methods/activities');
 const messages = require('../../methods/messages');
 const stravaLib = require('../../libs/strava');
@@ -26,30 +25,7 @@ const saveGpx = async (gpx, name, startTime, gpxFile) => {
   return path;
 };
 
-const processSegments = async (event, segmentsMessage, segmentEfforts, foreignKey) => {
-  const messageData = {
-    foreignKey,
-    app: 'strava',
-    event: segmentsMessage,
-  }
-  await segmentEfforts.reduce(async (lastPromise, segmentEffort) => {
-    const accum = await lastPromise;
-    const { segment } = segmentEffort;
-    const existing = await Feature.find({ foreignKey: segment.id });
-    if (existing.length === 0) {
-      const messageObject = {
-        ...event,
-        body: JSON.stringify(segment),
-      };
-      await messages.create(messageObject, messageData);
-    }
-    return [...accum, {}];
-  }, Promise.resolve([]));
-}
-
-const processActivity = async (event, message, segmentsMessage) => {
-  const data = JSON.parse(event.body);
-  const { object_id: foreignKey } = data;
+const processActivity = async (event, foreignKey) => {
   const existingActivities = await Activity.find({
     foreignKey,
   });
@@ -66,8 +42,7 @@ const processActivity = async (event, message, segmentsMessage) => {
   }
 
   const activityData = await stravaLib.api(`activities/${foreignKey}`);
-  const { name, start_date: startTime, segment_efforts: segmentEfforts } = activityData;
-  await processSegments(event, segmentsMessage, segmentEfforts, foreignKey);
+  const { name, start_date: startTime } = activityData;
   const url = `activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`;
   const stream = await stravaLib.api(url);
   const points = stream.latlng.data.map((e, index) => [
@@ -86,20 +61,18 @@ const processActivity = async (event, message, segmentsMessage) => {
     _id: activityId,
   };
 
-  let res;
   if (type === 'create') {
-    res = activities.create(activity);
+    await activities.create(activity);
   } else {
-    res = activities.update(activity, activityId);
+    await activities.update(activity, activityId);
   }
-  await messages.create(event, { foreignKey, app: 'strava', event: message });
-  return res;
+  return activityData;
 }
 
-module.exports = async (event, message, segmentsMessage) => {
-  await processActivity(event, message, segmentsMessage);
-  return {
-    statusCode: 200,
-    body: 'Ok',
-  };
+module.exports = async (event, message) => {
+  const data = JSON.parse(event.body);
+  const { object_id: foreignKey } = data;
+  const activityData = await processActivity(event, foreignKey);
+  await messages.create(event, { foreignKey, app: 'strava', event: message });
+  return activityData;
 };
