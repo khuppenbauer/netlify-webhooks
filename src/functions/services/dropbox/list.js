@@ -13,7 +13,7 @@ const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 const chunk = 50;
 
 const createMessage = async (event, message, entries) => {
-  const body = JSON.stringify(entries).replace(/.tag/gi, 'tag');
+  const body = JSON.stringify(entries).replace(/\.tag/gi, 'tag');
   const messageObject = {
     ...event,
     body,
@@ -35,7 +35,7 @@ const createMessage = async (event, message, entries) => {
 
 const chunkEntries = async (event, parseMessage, processMessage, entries) => {
   if (entries.length < chunk) {
-    const entriesObject = JSON.stringify(entries).replace(/.tag/gi, 'tag');
+    const entriesObject = JSON.stringify(entries).replace(/\.tag/gi, 'tag');
     return processEntries({ ...event, body: entriesObject }, processMessage);
   }
   let i;
