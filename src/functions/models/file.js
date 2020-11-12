@@ -64,6 +64,9 @@ const schema = new mongoose.Schema({
   imageHeight: {
     type: Number,
   },
+  status: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 

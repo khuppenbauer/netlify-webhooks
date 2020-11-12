@@ -13,13 +13,16 @@ module.exports = async (event, message, metaData) => {
     await File.create(
       {
         ...metaData,
+        status: 'new',
         _id: id,
       },
     );
   }
-  const messageObject = {
-    ...event,
-    body: JSON.stringify(metaData),
-  };
-  await messages.create(messageObject, { foreignKey: metaData.path_display, app: 'messageQueue', event: message });
+  if (message) {
+    const messageObject = {
+      ...event,
+      body: JSON.stringify(metaData),
+    };
+    await messages.create(messageObject, { foreignKey: metaData.path_display, app: 'messageQueue', event: message });
+  }
 };
