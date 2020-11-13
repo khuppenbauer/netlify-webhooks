@@ -90,9 +90,27 @@ const syncFiles = async (event, uploadMessage) => {
   };
   const deployedFiles = await File.find(query);
   await deployedFiles.reduce(async (lastPromise, file) => {
-    const { extension, path_display } = file;
+    const {
+      name,
+      path_display,
+      foreignKey,
+      sha1,
+      extension,
+      externalUrl,
+    } = file;
+    const messageObject = {
+      ...event,
+      body: JSON.stringify({
+        name,
+        path_display,
+        foreignKey,
+        sha1,
+        extension,
+        externalUrl,
+      }),
+    };
     const accum = await lastPromise;
-    await filesLib.message(event, uploadMessage, { extension, path_display });
+    await filesLib.message(messageObject, uploadMessage, { extension, path_display });
     return [...accum, {}];
   }, Promise.resolve([]));
   await File.updateMany(query, { status: 'deployed' });
