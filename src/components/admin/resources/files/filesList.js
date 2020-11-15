@@ -5,7 +5,7 @@ import {
   Datagrid,
   Pagination,
   BulkDeleteButton,
-  ShowButton,
+  TextField,
 } from 'react-admin';
 import FilesFilter from './filesFilter';
 import DownloadField from '../../components/DownloadField';
@@ -32,7 +32,7 @@ const FilesList = (props) => {
         <ReferenceField source="id" reference="files" label="Name" property="name" sortBy="name" />
         <NumeralField source="size" options={{ from: 'B' }} style={style}/>
         <DownloadField source="path_display" label="Download" />
-        <ShowButton/>
+        <TextField source="status"/>
       </Datagrid>
     </List>
   );

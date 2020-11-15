@@ -49,6 +49,7 @@ const FilesFilter = (props) => {
       $facet: {
         folder: facet('folder'),
         extension: facet('extension'),
+        status: facet('status'),
       },
     },
   ];
@@ -66,7 +67,7 @@ const FilesFilter = (props) => {
     return [];
   }
 
-  const { folder, extension } = data[0];
+  const { folder, extension, status } = data[0];
   return (
     <Filter {...props}>
       <SearchInput source="q" alwaysOn />
@@ -79,6 +80,11 @@ const FilesFilter = (props) => {
         source="extension"
         key="extension-filter"
         choices={extension.map((extensionItem) => ({ id: extensionItem.value, name: `${extensionItem.value} (${extensionItem.count})` }))}
+      />
+      <SelectInput
+        source="status"
+        key="status-filter"
+        choices={status.map((statusItem) => ({ id: statusItem.value, name: `${statusItem.value} (${statusItem.count})` }))}
       />
     </Filter>
   );

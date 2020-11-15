@@ -32,6 +32,7 @@ const FilesShow = (props) => {
           <DateField source="server_modified" showTime/>
           <DateField source="createdAt" showTime/>
           <DateField source="updatedAt" showTime/>
+          <TextField source="status"/>
         </Tab>
       </TabbedShowLayout>
     </Show>
