@@ -18,6 +18,14 @@ exports.handler = async (event) => {
         body: 'too many segments in GET request',
       };
 
+    case 'PUT':
+      if (segments.length === 1 || event.queryStringParameters.filter) {
+        return files.update(event, segments[0]);
+      }
+      return {
+        statusCode: 500,
+        body: 'invalid segments in POST request, must be /.netlify/functions/subscriptions/123456',
+      };
     /* DELETE /.netlify/functions/files/123456 */
     case 'DELETE':
       if (segments.length === 1 || event.queryStringParameters.filter) {
