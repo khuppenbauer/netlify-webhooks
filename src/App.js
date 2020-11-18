@@ -10,10 +10,12 @@ import tracks from './components/admin/resources/tracks';
 import photos from './components/admin/resources/photos';
 import files from './components/admin/resources/files';
 import features from './components/admin/resources/features';
+import logs from './components/admin/resources/logs';
 
 const App = () => (
   <Admin dataProvider={dataProvider}>
     <Resource name="messages" {...messages} />
+    <Resource name="logs" {...logs} />
     <Resource name="subscriptions" {...subscriptions} />
     <Resource name="activities" {...activities} />
     <Resource name="tracks" {...tracks} />
