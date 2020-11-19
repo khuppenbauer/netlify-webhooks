@@ -67,15 +67,10 @@ const syncFiles = async (event, uploadMessage) => {
   if (required.length > 0) {
     await upload(event, uploadMessage, id, required);
   }
-  const query = {
-    sha1: {
-      $nin: required,
-    },
-    status: 'new',
-  };
-  const deployedFiles = await File.find(query);
-  await deployedFiles.reduce(async (lastPromise, file) => {
+  await newFiles.reduce(async (lastPromise, file) => {
+    const accum = await lastPromise;
     const {
+      _id,
       name,
       path_display,
       foreignKey,
@@ -83,22 +78,23 @@ const syncFiles = async (event, uploadMessage) => {
       extension,
       externalUrl,
     } = file;
-    const messageObject = {
-      ...event,
-      body: JSON.stringify({
-        name,
-        path_display,
-        foreignKey,
-        sha1,
-        extension,
-        externalUrl,
-      }),
-    };
-    const accum = await lastPromise;
-    await filesLib.message(messageObject, uploadMessage, { extension, path_display });
+    if (required.indexOf(sha1) === -1) {
+      const messageObject = {
+        ...event,
+        body: JSON.stringify({
+          name,
+          path_display,
+          foreignKey,
+          sha1,
+          extension,
+          externalUrl,
+        }),
+      };
+      await filesLib.message(messageObject, uploadMessage, { extension, path_display });
+      await File.findByIdAndUpdate(_id, { status: 'deployed' });
+    }
     return [...accum, {}];
   }, Promise.resolve([]));
-  await File.updateMany(query, { status: 'deployed' });
 };
 
 exports.handler = async (event) => {
