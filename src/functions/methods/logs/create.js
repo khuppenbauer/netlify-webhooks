@@ -3,10 +3,27 @@ const db = require('../../database/mongodb');
 const Log = require('../../models/log');
 
 module.exports = async (event, data) => {
+  const {
+    path,
+    queryStringParameters,
+    headers,
+  } = event;
+  const { host } = headers;
+  const { action } = queryStringParameters;
+  const {
+    startTime,
+    status,
+  } = data;
   const log = {
-    ...data,
     _id: mongoose.Types.ObjectId(),
+    status,
+    url: `https://${host}/${path}`,
+    host,
+    path,
+    action,
+    responseTime: new Date().getTime() - startTime,
   };
+
   try {
     await Log.create(log);
   } catch (err) {

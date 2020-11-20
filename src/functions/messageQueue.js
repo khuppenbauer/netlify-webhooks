@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const db = require('./database/mongodb');
 const Subscription = require('./models/subscription');
-const Log = require('./models/log');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
+const logs = require('./methods/logs');
 
 const executeSubscriptions = async (event, subscription, data) => {
   let status;
@@ -14,21 +14,20 @@ const executeSubscriptions = async (event, subscription, data) => {
     const { url } = subscription;
     const urlObject = new URL(url);
     const res = await axios.post(url, JSON.stringify(data.body));
-    const searchParams = new URLSearchParams(urlObject.search);
-    await Log.create(
-      {
-        _id: mongoose.Types.ObjectId(),
-        status: res.status,
-        statusText: res.statusText,
-        url,
-        urlOrigin: urlObject.origin,
-        urlPathname: urlObject.pathname,
-        urlAction: searchParams.get('action'),
-        method: res.config.method,
-        responseTime: new Date().getTime() - startTime,
-        subscription,
+    const logObject = {
+      path: urlObject.pathname,
+      queryStringParameters: {
+        action: new URLSearchParams(urlObject.search).get('action'),
       },
-    );
+      headers: {
+        host: urlObject.host,
+      },
+    };
+    const logData = {
+      startTime,
+      status: res.status,
+    };
+    await logs.create(logObject, logData);
     status = 'success';
     message.push({
       subscription,
@@ -74,13 +73,13 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { fullDocument } = JSON.parse(event.body);
     const data = JSON.parse(fullDocument);
-    const message = await executeMessage(event, data);
+    await executeMessage(event, data);
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(message),
+      body: 'Ok',
     };
   }
   if (event.httpMethod === 'PUT') {

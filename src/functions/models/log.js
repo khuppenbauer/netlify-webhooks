@@ -10,29 +10,26 @@ const schema = new mongoose.Schema({
   status: {
     type: Number,
   },
-  statusText: {
-    type: String,
-  },
   url: {
     type: String,
   },
-  urlOrigin: {
+  host: {
     type: String,
   },
-  urlPathname: {
+  path: {
     type: String,
   },
-  urlAction: {
+  action: {
     type: String,
   },
-  method: {
-    type: String,
+  body: {
+    type: Object,
+  },
+  data: {
+    type: Object,
   },
   responseTime: {
     type: Number,
-  },
-  subscription: {
-    type: Object,
   },
 }, schemaOptions);
 const Log = mongoose.model('log', schema);

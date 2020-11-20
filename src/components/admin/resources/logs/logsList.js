@@ -54,10 +54,9 @@ const TabbedDataGrid = ({
           <Datagrid
             rowClick="show"
           >
-            <TextField source="urlOrigin"/>
-            <TextField source="urlPathname"/>
-            <TextField source="urlAction"/>
-            <TextField source="status" />
+            <TextField source="host"/>
+            <TextField source="path"/>
+            <TextField source="action"/>
             <NumberField source="responseTime" />
             <DateField source="createdAt" showTime/>
           </Datagrid>

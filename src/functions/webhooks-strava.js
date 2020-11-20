@@ -1,7 +1,9 @@
 const dotenv = require('dotenv').config();
 const messages = require('./methods/messages');
+const logs = require('./methods/logs');
 
 exports.handler = async (event) => {
+  const startTime = new Date().getTime();
   if (event.httpMethod === 'GET') {
     // Your verify token. Should be a random string.
     const VERIFY_TOKEN = process.env.STRAVA_VERIFY_TOKEN;
@@ -15,6 +17,7 @@ exports.handler = async (event) => {
       if (mode === 'subscribe' && token === VERIFY_TOKEN) {
         // Responds with the challenge token from the request
         console.log('WEBHOOK_VERIFIED');
+        await logs.create(event, { startTime, status: 200 });
         return {
           statusCode: 200,
           headers: {
@@ -37,6 +40,7 @@ exports.handler = async (event) => {
   } if (event.httpMethod === 'POST') {
     const data = JSON.parse(event.body);
     const { object_id: foreignKey, aspect_type: aspectType, object_type: objectType } = data;
+    await logs.create(event, { startTime, status: 200 });
     return messages.create(event, { foreignKey, app: 'strava', event: `${aspectType}_${objectType}` });
   }
   return {

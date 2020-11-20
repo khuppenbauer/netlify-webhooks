@@ -1,8 +1,11 @@
 const dotenv = require('dotenv').config();
 const messages = require('./methods/messages');
+const logs = require('./methods/logs');
 
 exports.handler = async (event) => {
+  const startTime = new Date().getTime();
   if (event.httpMethod === 'GET') {
+    await logs.create(event, { startTime, status: 200 });
     return {
       statusCode: 200,
       headers: {
@@ -16,6 +19,7 @@ exports.handler = async (event) => {
     const signature = event.headers['x-dropbox-signature'];
     if (VERIFY_SIGNATURE === signature) {
       const foreignKey = event.headers['x-bb-client-request-uuid'].slice(0, 36);
+      await logs.create(event, { startTime, status: 200 });
       return messages.create(event, { foreignKey, app: 'dropbox', event: 'changes' });
     }
     return {

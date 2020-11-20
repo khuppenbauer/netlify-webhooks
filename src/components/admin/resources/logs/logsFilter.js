@@ -35,10 +35,9 @@ const LogsFilter = (props) => {
     },
     {
       $facet: {
-        urlOrigin: facet('urlOrigin'),
-        urlPathname: facet('urlPathname'),
-        urlAction: facet('urlAction'),
-        status: facet('status'),
+        host: facet('host'),
+        path: facet('path'),
+        action: facet('action'),
       },
     },
   ];
@@ -55,28 +54,23 @@ const LogsFilter = (props) => {
   if (data === undefined || data.length === 0) {
     return [];
   }
-  const { urlOrigin, urlPathname, urlAction, status } = data[0];
+  const { host, path, action } = data[0];
   return (
     <Filter {...props}>
       <SelectInput
-        source="urlOrigin"
-        key="urlOrigin-filter"
-        choices={urlOrigin.map((urlOriginItem) => ({ id: urlOriginItem.value, name: `${urlOriginItem.value} (${urlOriginItem.count})` }))}
+        source="host"
+        key="host-filter"
+        choices={host.map((hostItem) => ({ id: hostItem.value, name: `${hostItem.value} (${hostItem.count})` }))}
       />
       <SelectInput
-        source="urlPathname"
-        key="urlPathname-filter"
-        choices={urlPathname.map((urlPathnameItem) => ({ id: urlPathnameItem.value, name: `${urlPathnameItem.value} (${urlPathnameItem.count})` }))}
+        source="path"
+        key="path-filter"
+        choices={path.map((pathItem) => ({ id: pathItem.value, name: `${pathItem.value} (${pathItem.count})` }))}
       />
       <SelectInput
-        source="urlAction"
-        key="urlAction-filter"
-        choices={urlAction.map((urlActionItem) => ({ id: urlActionItem.value, name: `${urlActionItem.value} (${urlActionItem.count})` }))}
-      />
-      <SelectInput
-        source="status"
-        key="status-filter"
-        choices={status.map((statusItem) => ({ id: statusItem.value, name: `${statusItem.value} (${statusItem.count})` }))}
+        source="action"
+        key="action-filter"
+        choices={action.map((actionItem) => ({ id: actionItem.value, name: `${actionItem.value} (${actionItem.count})` }))}
       />
     </Filter>
   );

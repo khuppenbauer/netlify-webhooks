@@ -11,15 +11,13 @@ import JsonView from '../../components/JsonView';
 const LogsShow = (props) => (
   <Show title="Message" {...props}>
     <SimpleShowLayout>
-      <TextField source="status" />
-      <TextField source="statusText" />
       <TextField source="url" />
-      <TextField source="urlOrigin" />
-      <TextField source="urlPathname" />
-      <TextField source="urlAction" />
-      <TextField source="method" />
+      <TextField source="host" />
+      <TextField source="path" />
+      <TextField source="action" />
+      <JsonView source="body" />
+      <JsonView source="data" />
       <NumberField source="responseTime" />
-      <JsonView source="subscription" />
       <DateField source="createdAt" showTime />
       <DateField source="updatedAt" showTime />
     </SimpleShowLayout>
