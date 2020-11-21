@@ -15,7 +15,7 @@ const BulkExecuteButton = ({ resource, selectedIds }) => {
   const unselectAll = useUnselectAll();
   const refresh = useRefresh();
   const [executeMany, { loading }] = useUpdateMany(
-    'messageQueue',
+    'trigger-messagequeue',
     selectedIds,
     {},
     {
