@@ -29,7 +29,7 @@ const MessagesList = (props) => {
   const channel = process.env.REACT_APP_PUSHER_CHANNEL;
   const refresh = useRefresh();
   useEffect(() => {
-    if (pusherActive) {
+    if (pusherActive === 'true') {
       const pusher = new Pusher(key, {
         cluster,
       });

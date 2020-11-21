@@ -10,7 +10,7 @@ const forceTLS = process.env.REACT_APP_PUSHER_ENCRYPTED;
 const channel = process.env.REACT_APP_PUSHER_CHANNEL;
 
 module.exports = async (event, data) => {
-  if (!pusherActive) {
+  if (pusherActive !== 'true') {
     return;
   }
   const pusher = new Pusher({
