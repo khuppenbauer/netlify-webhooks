@@ -16,7 +16,7 @@ const FileDisplayField = ({ record = {}, source }) => {
       { mimeType.startsWith('image')
         ? (
           <div>
-            <img src={`${cdnUrl}${record[source]}`} alt={name} />
+            <img src={`${cdnUrl}${record[source]}`} alt={name} width="400" />
           </div>
         )
         : null

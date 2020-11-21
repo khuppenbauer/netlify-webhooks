@@ -28,11 +28,14 @@ const FilesShow = (props) => {
           <TextField source="extension"/>
           <TextField source="sha1"/>
           <TextField source="foreignKey"/>
+          <DateField source="dateTimeOriginal" showTime/>
           <DateField source="client_modified" showTime/>
           <DateField source="server_modified" showTime/>
           <DateField source="createdAt" showTime/>
           <DateField source="updatedAt" showTime/>
           <TextField source="status"/>
+          <TextField source="imageWidth"/>
+          <TextField source="imageHeight"/>
         </Tab>
       </TabbedShowLayout>
     </Show>

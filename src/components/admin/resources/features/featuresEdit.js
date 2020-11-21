@@ -6,7 +6,7 @@ import {
 } from 'react-admin';
 
 const FeaturesEdit = (props) => (
-  <Edit title="Track" {...props}>
+  <Edit title="Feature" {...props}>
     <SimpleForm>
       <TextInput disabled source="_id" />
       <TextInput source="name" />
