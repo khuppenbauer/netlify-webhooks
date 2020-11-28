@@ -1,5 +1,8 @@
 const xmlBuilder = require('xmlbuilder');
-const moment = require('moment');
+const dayJs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+
+dayJs.extend(utc);
 
 const streamToGpx = async (stream, bounds, name, startTime, foreignKey, resource) => {
   const gpx = xmlBuilder
@@ -42,7 +45,7 @@ const streamToGpx = async (stream, bounds, name, startTime, foreignKey, resource
       .att('lon', e[1].toFixed(6));
     trkpt.ele('ele', stream.altitude.data[index]);
     if (startTime) {
-      const time = moment(startTime).add(stream.time.data[index], 's');
+      const time = dayJs(startTime).add(stream.time.data[index], 's');
       trkpt.ele('time', time.utc().format());
     }
   });

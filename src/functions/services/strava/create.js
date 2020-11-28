@@ -1,5 +1,5 @@
 const dotenv = require('dotenv').config();
-const moment = require('moment');
+const dayJs = require('dayjs');
 const messages = require('../../methods/messages');
 const stravaLib = require('../../libs/strava');
 
@@ -7,7 +7,7 @@ const createMessage = async (event, message, activity) => {
   const { id, start_date: startDate } = activity;
   const messageBody = {
     aspect_type: 'create',
-    event_time: moment(startDate).format('X'),
+    event_time: dayJs(startDate).unix(),
     object_id: id,
     object_type: 'activity',
     owner_id: process.env.STRAVA_OWNER_ID,

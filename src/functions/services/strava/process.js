@@ -1,6 +1,6 @@
 const dotenv = require('dotenv').config();
 const getSlug = require('speakingurl');
-const moment = require('moment');
+const dayJs = require('dayjs');
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
@@ -11,7 +11,7 @@ const dropboxLib = require('../../libs/dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 
 const saveGpx = async (gpx, name, startTime, gpxFile) => {
-  const fileName = `${moment(startTime).format('YYYY-MM-DD')}-${name}`;
+  const fileName = `${dayJs(startTime).format('YYYY-MM-DD')}-${name}`;
   const cleanFileName = getSlug(fileName, {
     maintainCase: true,
   });
