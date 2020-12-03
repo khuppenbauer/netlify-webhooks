@@ -3,6 +3,7 @@ const File = require('../../models/file');
 const filesLib = require('../../libs/files');
 const netlifyUpload = require('./upload');
 
+const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
 const netlifyDeployEndpoint = `sites/${process.env.NETLIFY_CDN_ID}/deploys`
 const token = process.env.NETLIFY_ACCESS_TOKEN;
@@ -34,6 +35,8 @@ const upload = async (event, message, id, required) => {
         sha1,
         extension,
         externalUrl,
+        origin: cdnUrl,
+        url: `${cdnUrl}${path_display}`,
       }),
     };
     await netlifyUpload(messageObject, message);
@@ -89,6 +92,8 @@ const syncFiles = async (event, uploadMessage) => {
           sha1,
           extension,
           externalUrl,
+          origin: cdnUrl,
+          url: `${cdnUrl}${path_display}`,
         }),
       };
       await filesLib.message(messageObject, uploadMessage, { extension, path_display });
