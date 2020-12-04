@@ -54,6 +54,8 @@ exports.handler = async (event) => {
       await dropbox.process(event, processMessage);
     } else if (action === 'sync') {
       await dropbox.sync(event, syncMessage);
+    } else if (action === 'upload') {
+      await dropbox.upload(event);
     }
     return {
       statusCode: 200,
