@@ -1,8 +1,27 @@
+const axios = require('axios');
+const getSlug = require('speakingurl');
+const dayJs = require('dayjs');
+const path = require('path');
 const stravaApi = require('./api');
 const photos = require('../../methods/photos');
+const files = require('../../methods/files');
 const Photo = require('../../models/photo');
+const File = require('../../models/file');
+const dropboxLib = require('../dropbox');
+const filesLib = require('../files');
 
-const stravaImageSize = 800;
+const stravaImageSize = 1024;
+
+const dropboxUpload = async (data, filePath) => {
+  const existingFile = await File.find({
+    path_display: filePath,
+    status: 'sync',
+  });
+  if (existingFile.length > 0) {
+    await dropboxLib.delete(filePath);
+  }
+  await dropboxLib.upload(data, filePath);
+};
 
 const processPhotos = async (event, activityId, activityPhotos) => {
   const activityPhotosUrl = activityPhotos.reduce(
@@ -31,7 +50,49 @@ const processPhotos = async (event, activityId, activityPhotos) => {
   return activityPhotosUrl;
 };
 
-module.exports = async (event, activityId, foreignKey) => {
+const getName = async (foreignKey) => {
+  const activityData = await stravaApi(`activities/${foreignKey}`);
+  const { name, start_date: startTime } = activityData;
+  const fileName = `${dayJs(startTime).format('YYYY-MM-DD')}-${name}`;
+  return getSlug(fileName, {
+    maintainCase: true,
+  });
+};
+
+const processDropboxSync = async (event, foreignKey, activityPhotos) => {
+  const name = await getName(foreignKey);
+  await activityPhotos.reduce(async (lastPromise, activityPhoto) => {
+    const accum = await lastPromise;
+    const { urls, sizes, created_at: dateTimeOriginal } = activityPhoto;
+    const url = urls[stravaImageSize];
+    const imageWidth = sizes[stravaImageSize][0];
+    const imageHeight = sizes[stravaImageSize][1];
+    const photoData = await filesLib.data(url, 'binary');
+    const { base } = path.parse(url);
+    const filePath = `/images/${base}`;
+    const source = {
+      name: 'strava',
+      foreignKey: name,
+      type: 'photo',
+    };
+    const metaData = {
+      name: base,
+      path_display: filePath,
+      source,
+      imageWidth,
+      imageHeight,
+      dateTimeOriginal,
+    }
+    await files.create(event, metaData);
+    await dropboxUpload(photoData, filePath);
+    return [...accum, {}];
+  }, Promise.resolve([]));
+}
+
+module.exports = async (event, activityId, foreignKey, dropboxSync) => {
   const activityPhotos = await stravaApi(`activities/${foreignKey}/photos?size=${stravaImageSize}`);
+  if (dropboxSync) {
+    await processDropboxSync(event, foreignKey, activityPhotos);
+  }
   return processPhotos(event, activityId, activityPhotos);
 };

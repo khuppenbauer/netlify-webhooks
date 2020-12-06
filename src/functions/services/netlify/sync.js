@@ -46,7 +46,7 @@ const upload = async (event, message, id, required) => {
 
 const syncFiles = async (event, uploadMessage) => {
   const files = await File.find({});
-  const newFiles = files.filter((file) => file.status === 'new');
+  const newFiles = files.filter((file) => file.status === 'sync');
   if (newFiles.length === 0) {
     return;
   }

@@ -1,23 +1,30 @@
 const dotenv = require('dotenv').config();
 const getSlug = require('speakingurl');
 const features = require('../../methods/features');
+const files = require('../../methods/files');
 const stravaLib = require('../../libs/strava');
 const dropboxLib = require('../../libs/dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 
-const saveGpx = async (gpx, name, gpxFile) => {
-  const cleanFileName = getSlug(name, {
+const getFileName = async (name) => {
+  return getSlug(name, {
     maintainCase: true,
   });
-  const path = `/features/segments/${cleanFileName}.gpx`;
-  if (path !== gpxFile) {
-    if (gpxFile) {
-      await dropboxLib.delete(gpxFile);
-    }
-    await dropboxLib.upload(gpx, path);
-  }
-  return path;
-};
+}
+
+const createFile = async (event, fileName, path) => {
+  const source = {
+    name: 'strava',
+    foreignKey: fileName,
+    type: 'segment',
+  };
+  const metaData = {
+    name: `${fileName}.gpx`,
+    path_display: path,
+    source,
+  };
+  await files.create(event, metaData);
+}
 
 const createFeature = async (segment, geoJson, gpxFile, bounds) => {
   if (geoJson) {
@@ -67,7 +74,7 @@ const createFeature = async (segment, geoJson, gpxFile, bounds) => {
   return false;
 }
 
-const processSegment = async (segment, saveSegmentsGpx) => {
+const processSegment = async (event, segment, saveSegmentsGpx) => {
   const {
     id,
     name,
@@ -82,14 +89,17 @@ const processSegment = async (segment, saveSegmentsGpx) => {
   const geoJson = await stravaLib.streams(stream, bounds, name, null, id, 'segment', 'geojson');
   let gpxFile;
   if (saveSegmentsGpx === 'true') {
+    const fileName = await getFileName(name);
+    const path = `/features/segments/${fileName}.gpx`;
     const gpx = await stravaLib.streams(stream, bounds, name, null, id, 'segments', 'gpx');
-    gpxFile = await saveGpx(gpx, name);
+    await createFile(event, fileName, path);
+    gpxFile = await dropboxLib.upload(gpx, path);
   }
   if (geoJson) {
     await createFeature(segment, geoJson, gpxFile, bounds);
   }
 }
 
-module.exports = async (segment, saveSegmentsGpx) => {
-  await processSegment(segment, saveSegmentsGpx);
+module.exports = async (event, segment, saveSegmentsGpx) => {
+  await processSegment(event, segment, saveSegmentsGpx);
 };

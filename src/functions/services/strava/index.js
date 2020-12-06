@@ -1,9 +1,11 @@
+const Activity = require('./activity');
 const Create = require('./create');
-const Process = require('./process');
+const Photos = require('./photos');
 const Segment = require('./segment');
 
 module.exports = {
+  activity: Activity,
   create: Create,
-  process: Process,
+  photos: Photos,
   segment: Segment,
 };

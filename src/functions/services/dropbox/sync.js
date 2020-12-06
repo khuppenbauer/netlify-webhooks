@@ -51,8 +51,9 @@ const saveFile = async (event, message, data) => {
     externalUrl,
     folder,
     ...imageData,
+    status: 'sync',
   };
-  await files.create(event, message, metaData);
+  await files.create(event, metaData, message);
 }
 
 module.exports = async (event, message) => {

@@ -3,8 +3,8 @@ const db = require('../../database/mongodb');
 const File = require('../../models/file');
 const messages = require('../messages');
 
-module.exports = async (event, message, metaData) => {
-  const existing = await File.find({ foreignKey: metaData.foreignKey });
+module.exports = async (event, metaData, message) => {
+  const existing = await File.find({ path_display: metaData.path_display });
   const id = (existing.length === 0) ? mongoose.Types.ObjectId() : existing[0]._id;
 
   if (existing.length > 0) {

@@ -26,22 +26,26 @@ const processSegments = async (event, message, segmentEfforts, foreignKey) => {
 exports.handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { action } = event.queryStringParameters;
-    if (action === 'process') {
+    if (action === 'activity') {
       const { includeSegments } = event.queryStringParameters;
       const message = 'save_activity';
-      const activityData = await strava.process(event, message);
+      const activityData = await strava.activity(event, message);
       if (includeSegments === 'true') {
         const { id, segment_efforts: segmentEfforts } = activityData;
         const segmentsMessage = 'parse_segments';
         await processSegments(event, segmentsMessage, segmentEfforts, id);
       }
+    } else if (action === 'photos') {
+      const { dropboxSync } = event.queryStringParameters;
+      const message = 'save_photos';
+      await strava.photos(event, message, dropboxSync);
     } else if (action === 'create') {
       const message = 'create_activity';
       await strava.create(event, message);
     } else if (action === 'segment') {
       const { saveSegmentsGpx } = event.queryStringParameters;
       const segment = JSON.parse(event.body);
-      await strava.segment(segment, saveSegmentsGpx);
+      await strava.segment(event, segment, saveSegmentsGpx);
     }
     return {
       statusCode: 200,

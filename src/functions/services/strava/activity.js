@@ -5,17 +5,13 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Activity = require('../../models/activity');
 const activities = require('../../methods/activities');
+const files = require('../../methods/files');
 const messages = require('../../methods/messages');
 const stravaLib = require('../../libs/strava');
 const dropboxLib = require('../../libs/dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 
-const saveGpx = async (gpx, name, startTime, gpxFile) => {
-  const fileName = `${dayJs(startTime).format('YYYY-MM-DD')}-${name}`;
-  const cleanFileName = getSlug(fileName, {
-    maintainCase: true,
-  });
-  const path = `/tracks/${cleanFileName}.gpx`;
+const saveGpx = async (path, gpx, gpxFile) => {
   if (path !== gpxFile) {
     if (gpxFile) {
       await dropboxLib.delete(gpxFile);
@@ -24,6 +20,27 @@ const saveGpx = async (gpx, name, startTime, gpxFile) => {
   }
   return path;
 };
+
+const getFileName = async (name, startTime) => {
+  const fileName = `${dayJs(startTime).format('YYYY-MM-DD')}-${name}`;
+  return getSlug(fileName, {
+    maintainCase: true,
+  });
+}
+
+const createFile = async (event, fileName, path) => {
+  const source = {
+    name: 'strava',
+    foreignKey: fileName,
+    type: 'gpxFile',
+  };
+  const metaData = {
+    name: `${fileName}.gpx`,
+    path_display: path,
+    source,
+  };
+  await files.create(event, metaData);
+}
 
 const processActivity = async (event, foreignKey) => {
   const existingActivities = await Activity.find({
@@ -42,6 +59,7 @@ const processActivity = async (event, foreignKey) => {
   }
 
   const activityData = await stravaLib.api(`activities/${foreignKey}`);
+  delete activityData['photos'];
   const { name, start_date: startTime } = activityData;
   const url = `activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`;
   const stream = await stravaLib.api(url);
@@ -51,12 +69,13 @@ const processActivity = async (event, foreignKey) => {
   ]);
   const bounds = await coordinatesLib.geoLib({ points }, 'getBounds');
   const gpx = await stravaLib.streams(stream, bounds, name, startTime, foreignKey, 'activities', 'gpx');
-  const gpxFile = await saveGpx(gpx, name, startTime, activityGpxFile);
-  const photos = await stravaLib.photos(event, activityId, foreignKey);
+  const fileName = await getFileName(name, startTime);
+  const path = `/tracks/${fileName}.gpx`;
+  await createFile(event, fileName, path);
+  const gpxFile = await saveGpx(path, gpx, activityGpxFile);
   const activity = {
     ...activityData,
     gpxFile,
-    photos,
     foreignKey,
     _id: activityId,
   };

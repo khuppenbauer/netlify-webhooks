@@ -50,7 +50,7 @@ const schema = new mongoose.Schema({
     type: String,
   },
   source: {
-    type: String,
+    type: Object,
   },
   externalUrl: {
     type: String,
