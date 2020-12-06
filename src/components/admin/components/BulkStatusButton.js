@@ -10,20 +10,19 @@ import {
   CRUD_UPDATE_MANY,
 } from 'react-admin';
 
-const BulkStatusNewButton = ({ resource, selectedIds }) => {
-  console.log([resource, selectedIds]);
+const BulkStatusButton = ({ resource, selectedIds, status }) => {
   const notify = useNotify();
-  const unselectAll = useUnselectAll('files');
+  const unselectAll = useUnselectAll(resource);
   const refresh = useRefresh();
   const [setStatus, { loading }] = useUpdateMany(
-    'files',
+    resource,
     selectedIds,
-    { status: 'new' },
+    { status },
     {
       action: CRUD_UPDATE_MANY,
       onSuccess: () => {
         notify(
-          'files status new succeeded',
+          `Status ${status} succeeded`,
           'info',
           {},
           true,
@@ -33,16 +32,16 @@ const BulkStatusNewButton = ({ resource, selectedIds }) => {
       },
       onFailure: (error) => {
         notify(
-          'files status new failed',
+          `Status ${status} failed`,
           'warning',
         );
       },
     },
   );
-
+  const label = `Status ${status}`;
   return (
     <Button
-      label="Status New"
+      label={label}
       disabled={loading}
       onClick={setStatus}
     >
@@ -51,9 +50,10 @@ const BulkStatusNewButton = ({ resource, selectedIds }) => {
   );
 };
 
-BulkStatusNewButton.propTypes = {
+BulkStatusButton.propTypes = {
   resource: PropTypes.string.isRequired,
   selectedIds: PropTypes.arrayOf(PropTypes.any).isRequired,
+  status: PropTypes.string,
 };
 
-export default BulkStatusNewButton;
+export default BulkStatusButton;

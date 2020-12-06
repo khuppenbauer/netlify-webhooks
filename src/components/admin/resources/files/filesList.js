@@ -11,12 +11,13 @@ import FilesFilter from './filesFilter';
 import DownloadField from '../../components/DownloadField';
 import ReferenceField from '../../components/ReferenceField';
 import NumeralField from '../../components/NumeralField';
-import BulkStatusNewButton from '../../components/BulkStatusNewButton';
+import BulkStatusButton from '../../components/BulkStatusButton';
 
 const FilesBulkActionButtons = (props) => (
   <Fragment>
     <BulkDeleteButton {...props} />
-    <BulkStatusNewButton {...props}/>
+    <BulkStatusButton {...props} status='new' />
+    <BulkStatusButton {...props} status='sync' />
   </Fragment>
 );
 
