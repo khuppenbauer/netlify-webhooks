@@ -5,6 +5,11 @@ import ErrorIcon from '@material-ui/icons/Error';
 import PendingIcon from '@material-ui/icons/Autorenew';
 
 const StatusField = ({ record = {}, source }) => {
+  if (record[source] === undefined) {
+    return (
+      <div></div>
+    );
+  }
   return (
     {
       pending: <PendingIcon style={{ color: orange[900] }} />,

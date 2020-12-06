@@ -11,6 +11,11 @@ const NumeralField = ({
   let unit;
   let number;
   const { from, to, precision } = options;
+  if (record[source] === undefined) {
+    return (
+      <div style={style} className="MuiTypography-body2"></div>
+    );
+  }
   if (from === 's') {
     number = new Date(record[source] * 1000).toISOString().substr(11, 8);
     unit = '';
