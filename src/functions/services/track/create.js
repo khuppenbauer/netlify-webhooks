@@ -4,6 +4,8 @@ const db = require('../../database/mongodb');
 const messages = require('../../methods/messages');
 const Track = require('../../models/track');
 
+const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
+
 module.exports = async (event, message) => {
   const data = JSON.parse(event.body);
   const { path_display } = data;
@@ -24,7 +26,13 @@ module.exports = async (event, message) => {
   }
   const messageObject = {
     ...event,
-    body: JSON.stringify({ name, gpxFile: path_display, track: trackId }),
+    body: JSON.stringify({
+      name,
+      gpxFile: path_display,
+      track: trackId,
+      origin: cdnUrl,
+      url: `${cdnUrl}${path_display}`,
+    }),
   };
   await messages.create(messageObject, { foreignKey: trackId, app: 'messageQueue', event: message });
 };
