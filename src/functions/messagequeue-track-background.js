@@ -14,7 +14,7 @@ exports.handler = async (event) => {
       await track.parse(event, message);
     } else if (action === 'upload') {
       const message = 'update_track';
-      await track.upload(event, message);
+      await track.upload(event);
     }
     return {
       statusCode: 200,

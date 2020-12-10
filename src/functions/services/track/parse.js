@@ -1,25 +1,9 @@
 const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
-const axios = require('axios');
-const tj = require('@tmcw/togeojson');
-const { DOMParser } = require('xmldom');
 const db = require('../../database/mongodb');
 const Track = require('../../models/track');
 const messages = require('../../methods/messages');
 const coordinatesLib = require('../../libs/coordinates');
-
-const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
-
-const parseXml = async (data) => {
-  const xml = new DOMParser().parseFromString(data, 'text/xml');
-  const { nodeName } = xml.documentElement;
-  if (nodeName === 'gpx') {
-    return tj.gpx(xml);
-  } else if (nodeName === 'kml') {
-    return tj.kml(xml);
-  }
-  return false;
-}
 
 const calculateElevation = async (points) => {
   let totalElevationGain = 0;
@@ -56,10 +40,11 @@ const calculateElevation = async (points) => {
 }
 
 const addMetaData = async (event, message) => {
+  let elevation;
   const body = JSON.parse(event.body);
-  const { track, gpxFile } = body;
-  const url = new URL(`${cdnUrl}${gpxFile}`).href;
-  const geoJson = await parseXml(await (await axios.get(url)).data);
+  const { track } = body;
+  const trackObject = await Track.findById(track);
+  const { geoJson, geoJsonSmall } = trackObject;
   const { properties, geometry } = geoJson.features[0];
   const { coordinates } = geometry;
   const { name, time, coordTimes } = properties;
@@ -68,11 +53,17 @@ const addMetaData = async (event, message) => {
   }
   const start = coordinates[0];
   const end = coordinates[coordinates.length - 1];
-  const bounds = await coordinatesLib.geoLib(points, 'getBounds');
-  const distance = await coordinatesLib.geoLib(points, 'getPathLength');
+  const bounds = trackObject.bounds || await coordinatesLib.geoLib(points, 'getBounds');
+  const distance = trackObject.distance || await coordinatesLib.geoLib(points, 'getPathLength');
   const startLocation = await coordinatesLib.location(start[1], start[0]);
   const endLocation = await coordinatesLib.location(end[1], end[0]);
-  const elevation = await calculateElevation(coordinates);
+  if (geoJsonSmall) {
+    const { geometry: geometrySmall } = geoJsonSmall.features[0];
+    const { coordinates: coordinatesSmall } = geometrySmall;
+    elevation = await calculateElevation(coordinatesSmall);
+  } else {
+    elevation = await calculateElevation(coordinates);
+  }
   const metaData = {
     name,
     date: time,

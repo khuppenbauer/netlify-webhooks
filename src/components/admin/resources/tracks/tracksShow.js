@@ -61,7 +61,6 @@ const TracksShow = (props) => {
         </Tab>
         <Tab label="Downloads">
           <DownloadField source="gpxFile"/>
-          <DownloadField source="geoJsonFile"/>
         </Tab>
         <Tab label="Map">
           <MapboxField/>

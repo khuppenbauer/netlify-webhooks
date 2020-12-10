@@ -4,6 +4,7 @@ const fileType = require('file-type');
 const axios = require('axios');
 const dropboxLib = require('../../libs/dropbox');
 const messages = require('../../methods/messages');
+const files = require('../../methods/files');
 const Track = require('../../models/track');
 const File = require('../../models/file');
 
@@ -70,6 +71,7 @@ const createImage = async (geoJson) => {
 const dropboxUpload = async (data, filePath) => {
   const existingFile = await File.find({
     path_display: filePath,
+    status: 'sync',
   });
   if (existingFile.length > 0) {
     await dropboxLib.delete(filePath);
@@ -85,6 +87,17 @@ module.exports = async (event, message) => {
   const { name: fileName } = path.parse(name);
   const { ext: extension } = await fileType.fromBuffer(data);
   const filePath = `/preview/${fileName}.${extension}`;
+  const source = {
+    name: 'mapbpx',
+    foreignKey: name,
+    type: 'staticImage',
+  };
+  const metaData = {
+    name: `${fileName}.${extension}`,
+    path_display: filePath,
+    source,
+  }
+  await files.create(event, metaData);
   await dropboxUpload(data, filePath);
   await Track.findByIdAndUpdate(track, { staticImage: filePath });
   const messageObject = {
