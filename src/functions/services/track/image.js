@@ -2,7 +2,7 @@ const dotenv = require('dotenv').config();
 const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
-const dropboxLib = require('../../libs/dropbox');
+const dropbox = require('../dropbox');
 const messages = require('../../methods/messages');
 const files = require('../../methods/files');
 const Track = require('../../models/track');
@@ -68,17 +68,6 @@ const createImage = async (geoJson) => {
     .then((response) => Buffer.from(response.data, 'binary'));
 }
 
-const dropboxUpload = async (data, filePath) => {
-  const existingFile = await File.find({
-    path_display: filePath,
-    status: 'sync',
-  });
-  if (existingFile.length > 0) {
-    await dropboxLib.delete(filePath);
-  }
-  await dropboxLib.upload(data, filePath);
-}
-
 module.exports = async (event, message) => {
   const body = JSON.parse(event.body);
   const { gpxFile, name, track } = body;
@@ -98,7 +87,7 @@ module.exports = async (event, message) => {
     source,
   }
   await files.create(event, metaData);
-  await dropboxUpload(data, filePath);
+  await dropbox.upload(data, filePath);
   await Track.findByIdAndUpdate(track, { staticImage: filePath });
   const messageObject = {
     ...event,

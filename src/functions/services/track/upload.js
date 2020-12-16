@@ -1,7 +1,7 @@
 const dotenv = require('dotenv').config();
 const path = require('path');
 const mime = require('mime-types');
-const dropboxLib = require('../../libs/dropbox');
+const dropbox = require('../dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 const files = require('../../methods/files');
 const messages = require('../../methods/messages');
@@ -14,17 +14,6 @@ const getPath = async (fileName, outtype) => {
   const newFileName = `${fileName}.${extension}`;
   return `/convert/${extension}/${newFileName}`;
 };
-
-const dropboxUpload = async (data, filePath) => {
-  const existingFile = await File.find({
-    path_display: filePath,
-    status: 'sync',
-  });
-  if (existingFile.length > 0) {
-    await dropboxLib.delete(filePath);
-  }
-  await dropboxLib.upload(data, filePath);
-}
 
 module.exports = async (event, message) => {
   const { event: data, content } = JSON.parse(event.body);
@@ -60,5 +49,5 @@ module.exports = async (event, message) => {
   };
   await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
   await files.create(event, metaData);
-  await dropboxUpload(content, filePath);
+  await dropbox.upload(content, filePath);
 };

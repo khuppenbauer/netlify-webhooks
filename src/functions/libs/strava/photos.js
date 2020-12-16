@@ -7,21 +7,10 @@ const photos = require('../../methods/photos');
 const files = require('../../methods/files');
 const Photo = require('../../models/photo');
 const File = require('../../models/file');
-const dropboxLib = require('../dropbox');
+const dropbox = require('../../services/dropbox');
 const filesLib = require('../files');
 
 const stravaImageSize = 1024;
-
-const dropboxUpload = async (data, filePath) => {
-  const existingFile = await File.find({
-    path_display: filePath,
-    status: 'sync',
-  });
-  if (existingFile.length > 0) {
-    await dropboxLib.delete(filePath);
-  }
-  await dropboxLib.upload(data, filePath);
-};
 
 const processPhotos = async (event, activityId, activityPhotos) => {
   const activityPhotosUrl = activityPhotos.reduce(
@@ -84,7 +73,7 @@ const processDropboxSync = async (event, foreignKey, activityPhotos) => {
       dateTimeOriginal,
     }
     await files.create(event, metaData);
-    await dropboxUpload(photoData, filePath);
+    await dropbox.upload(photoData, filePath);
     return [...accum, {}];
   }, Promise.resolve([]));
 }
