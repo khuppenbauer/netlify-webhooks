@@ -3,9 +3,9 @@ const path = require('path');
 const mime = require('mime-types');
 const dropbox = require('../dropbox');
 const coordinatesLib = require('../../libs/coordinates');
+const features = require('../../methods/features');
 const files = require('../../methods/files');
 const messages = require('../../methods/messages');
-const File = require('../../models/file');
 const Track = require('../../models/track');
 
 const getPath = async (fileName, outtype) => {
@@ -13,6 +13,51 @@ const getPath = async (fileName, outtype) => {
   const extension = mime.extension(mimeType);
   const newFileName = `${fileName}.${extension}`;
   return `/convert/${extension}/${newFileName}`;
+};
+
+const createFeature = async (track, geoJson) => {
+  const {
+    name,
+    startCity: city,
+    startState: state,
+    startCountry: country,
+    minCoords,
+    maxCoords,
+    distance,
+    startCoords: startLatLng,
+    endCoords: endLatLng,
+    elevLow: elevationLow,
+    elevHigh: elevationHigh,
+    totalElevationGain,
+    totalElevationLoss,
+    startElevation,
+    endElevation,
+    _id: foreignKey,
+  } = track;
+  const feature = {
+    name,
+    type: 'track',
+    source: 'gpx',
+    foreignKey,
+    city,
+    state,
+    country,
+    meta: {
+      distance,
+      elevationHigh,
+      elevationLow,
+      startLatLng,
+      endLatLng,
+      totalElevationGain,
+      totalElevationLoss,
+      startElevation,
+      endElevation,
+    },
+    geoJson,
+    minCoords,
+    maxCoords,
+  };
+  return features.create(feature);
 };
 
 module.exports = async (event, message) => {
@@ -26,7 +71,12 @@ module.exports = async (event, message) => {
   const fileName = `${name}_${count}_${distance}${error}`;
   const filePath = await getPath(fileName, outtype);
   const { base } = path.parse(filePath);
-  const geoJsonSmall = await coordinatesLib.toGeoJson(content);
+  const geoJson = await coordinatesLib.toGeoJson(content);
+  const { geometry } = geoJson.features[0];
+  const { coordinates } = geometry;
+  const elevation = await coordinatesLib.elevation(coordinates);
+  const existingTrack = await Track.findById(track);
+  const feature = await createFeature(existingTrack, geoJson);
   const source = {
     name: 'gpsbabel',
     foreignKey: name,
@@ -37,11 +87,12 @@ module.exports = async (event, message) => {
     name: base,
     path_display: filePath,
     source,
-  }
+  };
   const trackData = {
     gpxFileSmall: filePath,
-    geoJsonSmall,
-  }
+    geoJson,
+    ...elevation,
+  };
   await Track.findByIdAndUpdate(track, trackData);
   const messageObject = {
     ...event,

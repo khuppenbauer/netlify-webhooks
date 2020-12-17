@@ -9,9 +9,6 @@ exports.handler = async (event) => {
     } else if (action === 'image') {
       const message = 'create_static_image';
       await track.image(event, message);
-    } else if (action === 'parse') {
-      const message = 'add_metadata';
-      await track.parse(event, message);
     } else if (action === 'upload') {
       const message = 'update_track';
       await track.upload(event, message);

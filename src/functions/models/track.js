@@ -88,10 +88,10 @@ const schema = new mongoose.Schema({
   staticImage: {
     type: String,
   },
-  geoJson: {
-    type: Object,
+  geoJsonFile: {
+    type: String,
   },
-  geoJsonSmall: {
+  geoJson: {
     type: Object,
   },
   visualization: {
