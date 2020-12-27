@@ -1,6 +1,7 @@
 const axios = require('axios');
 const File = require('./models/file');
 const dropbox = require('./services/dropbox');
+const sentry = require('./libs/sentry');
 
 const processEntries = async (event, message, entries) => {
   await Object.values(entries).reduce(async (lastPromise, entry) => {
@@ -19,7 +20,7 @@ const processEntries = async (event, message, entries) => {
   }, Promise.resolve([]));
 };
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const syncMessage = 'create_file';
     const entries = await dropbox.list(event);
@@ -35,3 +36,7 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});

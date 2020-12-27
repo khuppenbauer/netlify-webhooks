@@ -5,15 +5,20 @@ const Subscription = require('./models/subscription');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
 const logs = require('./methods/logs');
+const sentry = require('./libs/sentry');
 
 const executeSubscriptions = async (event, subscription, data) => {
   let status;
   const message = data.message !== undefined ? data.message : [];
   try {
+    const body = {
+      ...data.body,
+      message: data._id,
+    }
     const startTime = new Date().getTime();
     const { url } = subscription;
     const urlObject = new URL(url);
-    const res = await axios.post(url, JSON.stringify(data.body));
+    const res = await axios.post(url, JSON.stringify(body));
     const logObject = {
       path: urlObject.pathname,
       queryStringParameters: {
@@ -36,10 +41,12 @@ const executeSubscriptions = async (event, subscription, data) => {
     });
   } catch (err) {
     status = 'error';
-    message.push({
-      subscription,
-      error: err.message,
-    });
+    const messageObject = {
+      ...event,
+      body: JSON.stringify({ status, statusText: err.message }),
+    };
+    await messages.update(messageObject, data._id);
+    throw err;
   }
   const messageObject = {
     ...event,
@@ -69,7 +76,7 @@ const executeMessage = async (event, data) => {
   }, Promise.resolve([]));
 };
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { fullDocument } = JSON.parse(event.body);
     const data = JSON.parse(fullDocument);
@@ -123,3 +130,7 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});

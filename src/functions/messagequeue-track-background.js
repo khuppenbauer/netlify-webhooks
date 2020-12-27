@@ -1,6 +1,7 @@
 const track = require('./services/track');
+const sentry = require('./libs/sentry');
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { action } = event.queryStringParameters;
     if (action === 'create') {
@@ -23,3 +24,7 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});

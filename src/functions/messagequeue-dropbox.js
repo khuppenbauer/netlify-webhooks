@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const dropbox = require('./services/dropbox');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
+const sentry = require('./libs/sentry');
 
 const chunk = 50;
 
@@ -41,7 +42,7 @@ const chunkEntries = async (event, parseMessage, processMessage, entries) => {
   return true;
 };
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { action } = event.queryStringParameters;
     const parseMessage = 'parse_changes';
@@ -67,3 +68,5 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler);

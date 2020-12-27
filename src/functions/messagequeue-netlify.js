@@ -1,6 +1,7 @@
 const netlify = require('./services/netlify');
+const sentry = require('./libs/sentry');
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const deployMessage = 'deploy_file';
     const uploadMessage = 'upload_{{dir}}_{{extension}}_file';
@@ -20,3 +21,5 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler);

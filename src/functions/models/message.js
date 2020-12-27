@@ -19,6 +19,9 @@ const schema = new mongoose.Schema({
   status: {
     type: String,
   },
+  statusText: {
+    type: String,
+  },
   message: {
     type: Object,
   },

@@ -1,6 +1,7 @@
 const Feature = require('./models/feature');
 const strava = require('./services/strava');
 const messages = require('./methods/messages');
+const sentry = require('./libs/sentry');
 
 const processSegments = async (event, message, segmentEfforts, foreignKey) => {
   const messageData = {
@@ -23,7 +24,7 @@ const processSegments = async (event, message, segmentEfforts, foreignKey) => {
   }, Promise.resolve([]));
 }
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { action } = event.queryStringParameters;
     if (action === 'activity') {
@@ -57,3 +58,5 @@ exports.handler = async (event) => {
     body: 'Method Not Allowed',
   };
 };
+
+exports.handler = sentry.wrapHandler(handler);
