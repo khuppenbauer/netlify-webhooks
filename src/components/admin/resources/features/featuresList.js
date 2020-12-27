@@ -60,7 +60,7 @@ const FeaturesList = (props) => {
       {...props}
       perPage={25}
       filters={<FeaturesFilter />}
-      pagination={<Pagination rowsPerPageOptions={[10, 25, 50, 100]} />}
+      pagination={<Pagination rowsPerPageOptions={[10, 25, 50, 100, 500, 1000]} />}
       sort={{ field: 'createdAt', order: 'DESC' }}
     >
       <TabbedDataGrid />

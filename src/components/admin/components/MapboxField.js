@@ -11,17 +11,17 @@ const getMapData = (ids, data) => {
   const maxLat = [];
   const maxLon = [];
   const features = ids.map((id) => {
-    const { geoJson } = data[id];
+    const { geoJson, minCoords, maxCoords } = data[id];
+    const feature = geoJson.features[0];
     const {
       type,
       geometry,
       properties,
-      bbox,
-    } = geoJson.features[0];
-    minLon.push(bbox[0]);
-    minLat.push(bbox[1]);
-    maxLon.push(bbox[2]);
-    maxLat.push(bbox[3]);
+    } = feature;
+    minLon.push(minCoords.lon);
+    minLat.push(minCoords.lat);
+    maxLon.push(maxCoords.lon);
+    maxLat.push(maxCoords.lat);
     const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
     return {
       type,
