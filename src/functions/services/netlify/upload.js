@@ -1,3 +1,4 @@
+const dotenv = require('dotenv').config();
 const axios = require('axios');
 const File = require('../../models/file');
 const filesLib = require('../../libs/files');
