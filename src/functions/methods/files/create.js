@@ -12,9 +12,9 @@ module.exports = async (event, metaData, message) => {
   } else {
     await File.create(
       {
-        ...metaData,
         status: 'new',
         _id: id,
+        ...metaData,
       },
     );
   }
