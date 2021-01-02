@@ -49,5 +49,6 @@ const createFeature = async (geoJson, type, source) => {
 }
 
 module.exports = async (geoJson, type, source) => {
+  geoJson.features[0].properties.type = type;
   await createFeature(geoJson, type, source);
 };

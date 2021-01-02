@@ -71,7 +71,7 @@ module.exports = async (event, message) => {
   const fileName = `${name}_${count}_${distance}${error}`;
   const filePath = await getPath(fileName, outtype);
   const { base } = path.parse(filePath);
-  const geoJson = await coordinatesLib.toGeoJson(content);
+  const geoJson = await coordinatesLib.toGeoJson(content, 'track');
   const { geometry } = geoJson.features[0];
   const { coordinates } = geometry;
   const elevation = await coordinatesLib.elevation(coordinates);

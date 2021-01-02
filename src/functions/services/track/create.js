@@ -79,7 +79,7 @@ module.exports = async (event, message) => {
   const { path_display: pathDisplay } = data;
   const { name } = path.parse(pathDisplay);
   const url = `${cdnUrl}${pathDisplay}`;
-  const geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data);
+  const geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data, 'track');
   const metaData = await getMetaData(geoJson);
   const geoJsonFile = await saveGeoJson(name, geoJson, event);
   const existingTrack = await Track.find({

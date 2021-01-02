@@ -81,6 +81,7 @@ const streamToGeoJson = async (stream, bounds, name) => {
         properties: {
           name,
           color: 'red',
+          type: 'segment',
         },
       },
     ],
