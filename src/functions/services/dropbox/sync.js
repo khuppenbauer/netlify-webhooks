@@ -15,6 +15,8 @@ const saveFile = async (event, message, data) => {
   let fileData;
   let externalUrl;
   let imageData;
+  let coordinate;
+  let coords;
 
   if (isImage) {
     externalUrl = await dropboxLib.link(id);
@@ -25,11 +27,23 @@ const saveFile = async (event, message, data) => {
         DateTimeOriginal: dateTimeOriginal,
         ExifImageWidth: imageWidth,
         ExifImageHeight: imageHeight,
+        latitude,
+        longitude,
       } = exif;
+      if (latitude && longitude) {
+        const lat = parseFloat(latitude.toFixed(6));
+        const lon = parseFloat(longitude.toFixed(6));
+        coordinate = [lon, lat];
+        coords = {
+          lat,
+          lon,
+        };
+      }
       imageData = {
         dateTimeOriginal,
         imageWidth,
         imageHeight,
+        ...coords,
       };
     }
   } else {
@@ -54,6 +68,9 @@ const saveFile = async (event, message, data) => {
     status: 'sync',
   };
   await files.create(event, metaData, message);
+  if (coordinate) {
+    await filesLib.feature(metaData, coordinate);
+  }
 }
 
 module.exports = async (event, message) => {

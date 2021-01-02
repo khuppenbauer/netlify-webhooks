@@ -102,6 +102,17 @@ const MapboxField = ({ record, ids, data }) => {
           'line-color': ['get', 'color'],
           'line-width': 2,
         },
+        filter: ['==', '$type', 'LineString'],
+      });
+      map.addLayer({
+        id: 'point',
+        type: 'circle',
+        source: 'route',
+        paint: {
+          'circle-radius': 3,
+          'circle-color': 'red',
+        },
+        filter: ['==', '$type', 'Point'],
       });
     })
 

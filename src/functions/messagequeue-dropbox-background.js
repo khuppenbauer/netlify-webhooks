@@ -1,5 +1,6 @@
 const axios = require('axios');
 const File = require('./models/file');
+const Feature = require('./models/feature');
 const dropbox = require('./services/dropbox');
 const sentry = require('./libs/sentry');
 
@@ -9,6 +10,7 @@ const processEntries = async (event, message, entries) => {
     const { tag, path_display } = entry;
     if (tag === 'deleted') {
       await File.deleteMany({ path_display });
+      await Feature.deleteMany({ 'meta.pathDisplay': path_display });
     } else if (tag === 'file') {
       const messageObject = {
         ...event,

@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
+const Feature = require('../../models/feature');
 const Message = require('../../models/message');
 const messages = require('../../methods/messages');
 
@@ -11,6 +12,7 @@ const processEntries = async (event, message, entries) => {
     const { tag, path_display } = entry;
     if (tag === 'deleted') {
       await File.deleteMany({ path_display });
+      await Feature.deleteMany({ 'meta.pathDisplay': path_display });
     } else if (tag === 'file') {
       const messageObject = {
         ...event,
