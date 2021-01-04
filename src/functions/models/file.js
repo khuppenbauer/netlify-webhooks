@@ -70,6 +70,9 @@ const schema = new mongoose.Schema({
   coords: {
     type: Object,
   },
+  url: {
+    type: String,
+  },
 }, schemaOptions);
 const File = mongoose.model('file', schema);
 

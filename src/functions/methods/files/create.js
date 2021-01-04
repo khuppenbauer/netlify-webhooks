@@ -21,7 +21,7 @@ module.exports = async (event, metaData, message) => {
   if (message) {
     const messageObject = {
       ...event,
-      body: JSON.stringify(metaData),
+      body: JSON.stringify({ ...metaData, _id: id }),
     };
     await messages.create(messageObject, { foreignKey: metaData.path_display, app: 'messageQueue', event: message });
   }

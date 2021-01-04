@@ -18,6 +18,7 @@
     "@sentry/node": "^5.29.2",
     "@tmcw/togeojson": "^4.2.0",
     "axios": "^0.20.0",
+    "cloudinary": "^1.23.0",
     "convert-units": "^2.3.4",
     "crypto": "^1.0.1",
     "dayjs": "^1.9.6",
