@@ -3,6 +3,7 @@ const features = require('./methods/features');
 exports.handler = async (event) => {
   const path = event.path.replace(/(\.netlify\/functions\/)?[^/]+/, '');
   const segments = path.split('/').filter((e) => e);
+  const { type } = event.queryStringParameters;
   switch (event.httpMethod) {
     case 'GET':
       /* GET /.netlify/functions/tracks */
@@ -20,7 +21,11 @@ exports.handler = async (event) => {
 
       /* POST /.netlify/functions/tracks */
     case 'POST':
-      return features.create(event);
+      if (type === 'filter') {
+        return features.filter(event);
+      } else {
+        return features.create(event);
+      }
       /* PUT /.netlify/functions/tracks/123456 */
     case 'PUT':
       if (segments.length === 1) {

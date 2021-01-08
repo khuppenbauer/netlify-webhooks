@@ -37,6 +37,18 @@ export default {
 
   },
 
+  getFilter: (resource, params) => {
+    const url = `${apiUrl}/${resource}?type=filter`;
+    return httpClient(url, {
+      method: 'POST',
+      body: JSON.stringify(params.data),
+    }).then(({ headers, json }) => {
+      return {
+        data: json
+      }
+    })
+  },
+
   getOne: (resource, params) => httpClient(`${apiUrl}/${resource}/${params.id}`).then(({ json }) => ({
     data: json,
   })),

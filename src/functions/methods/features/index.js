@@ -3,6 +3,7 @@ const Read = require('./read');
 const Update = require('./update');
 const Delete = require('./delete');
 const List = require('./list');
+const Filter = require('./filter');
 
 module.exports = {
   create: Create,
@@ -10,4 +11,5 @@ module.exports = {
   update: Update,
   delete: Delete,
   list: List,
+  filter: Filter,
 };

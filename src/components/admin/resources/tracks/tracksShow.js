@@ -15,6 +15,7 @@ import FileDisplayField from '../../components/FileDisplayField';
 import DownloadField from '../../components/DownloadField';
 import NumeralField from '../../components/NumeralField';
 import MapboxField from '../../components/MapboxField';
+import FeaturesFilter from './featuresFilter';
 
 const TracksShow = (props) => {
   const style = { whiteSpace: 'nowrap' };
@@ -55,15 +56,24 @@ const TracksShow = (props) => {
             label="photos"
           >
             <SingleFieldList>
-              <ImageField source="url"/>
+              <ImageField source="url" />
             </SingleFieldList>
           </ReferenceManyField>
         </Tab>
         <Tab label="Downloads">
-          <DownloadField source="gpxFile"/>
+          <DownloadField source="gpxFile" />
         </Tab>
         <Tab label="Map">
-          <MapboxField/>
+          <MapboxField />
+        </Tab>
+        <Tab label="Map Features">
+          <FeaturesFilter type={['image', 'pass', 'residence']} operation="geoWithin" />
+        </Tab>
+        <Tab label="Trails">
+          <FeaturesFilter type="segment" operation="geoWithin" />
+        </Tab>
+        <Tab label="Tracks around">
+          <FeaturesFilter type="track" operation="geoIntersects" />
         </Tab>
         <Tab label="GeoJson">
           <JsonView source="geoJson" />

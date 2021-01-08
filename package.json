@@ -17,6 +17,7 @@
     "@material-ui/icons": "^4.9.1",
     "@sentry/node": "^5.29.2",
     "@tmcw/togeojson": "^4.2.0",
+    "@turf/turf": "^5.1.6",
     "axios": "^0.21.1",
     "cloudinary": "^1.23.0",
     "convert-units": "^2.3.4",

@@ -8,7 +8,7 @@ mapboxgl.workerClass = require('worker-loader!mapbox-gl/dist/mapbox-gl-csp-worke
 
 const mapboxToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
-const getMapData = (ids, data) => {
+const getMapData = (ids, data, geoJsonData) => {
   const minLon = [];
   const minLat = [];
   const maxLat = [];
@@ -21,17 +21,36 @@ const getMapData = (ids, data) => {
       geometry,
       properties,
     } = feature;
+    const { coordinates } = geometry;
     minLon.push(minCoords.lon);
     minLat.push(minCoords.lat);
     maxLon.push(maxCoords.lon);
     maxLat.push(maxCoords.lat);
-    const color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    const color = `#${Math.random().toString(16).substr(2, 6)}`;
     return {
       type,
       geometry,
-      properties: { ...properties, color },
+      properties: {
+        ...properties,
+        color,
+        coordinates,
+      },
     };
   });
+  if (geoJsonData) {
+    const { minCoords: min, maxCoords: max, geoJson } = geoJsonData;
+    minLon.push(min.lon);
+    minLat.push(min.lat);
+    maxLon.push(max.lon);
+    maxLat.push(max.lat);
+    const geoJsonFeature = geoJson.features[0];
+    const {
+      properties,
+    } = geoJsonFeature;
+    const color = 'blue';
+    geoJsonFeature.properties = { ...properties, color };
+    features.unshift(geoJsonFeature);
+  }
   return {
     geoJson: {
       features,
@@ -48,7 +67,7 @@ const getMapData = (ids, data) => {
   };
 }
 
-const MapboxField = ({ record, ids, data }) => {
+const MapboxField = ({ record, ids, data, geoJsonData }) => {
   // this ref holds the map DOM node so that we can pass it into Mapbox GL
   const mapNode = useRef(null)
 
@@ -69,7 +88,7 @@ const MapboxField = ({ record, ids, data }) => {
       geoJson = record.geoJson;
       padding = 100;
     } else if (ids && data) {
-      const res = getMapData(ids, data);
+      const res = getMapData(ids, data, geoJsonData);
       minCoords = res.minCoords;
       maxCoords = res.maxCoords;
       geoJson = res.geoJson;
@@ -86,7 +105,6 @@ const MapboxField = ({ record, ids, data }) => {
     })
     mapRef.current = map
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
-
     map.on('load', () => {
       // add sources
       map.addSource('route', {
@@ -108,14 +126,186 @@ const MapboxField = ({ record, ids, data }) => {
         filter: ['==', '$type', 'LineString'],
       });
       map.addLayer({
-        id: 'point',
-        type: 'circle',
+        id: 'polygon',
+        type: 'fill',
         source: 'route',
         paint: {
-          'circle-radius': 3,
-          'circle-color': 'red',
+          'fill-color': '#888888',
+          'fill-opacity': 0.4,
         },
-        filter: ['==', '$type', 'Point'],
+        filter: ['==', '$type', 'Polygon'],
+      });
+      map.addLayer({
+        id: 'image',
+        type: 'symbol',
+        source: 'route',
+        layout: {
+          'icon-image': 'attraction-15',
+          'icon-allow-overlap': true,
+        },
+        filter: ['==', 'type', 'image'],
+      });
+      map.addLayer({
+        id: 'pass',
+        type: 'symbol',
+        source: 'route',
+        layout: {
+          'icon-image': 'mountain-15',
+          'icon-allow-overlap': true,
+        },
+        filter: ['==', 'type', 'pass'],
+      });
+      map.addLayer({
+        id: 'residence',
+        type: 'symbol',
+        source: 'route',
+        layout: {
+          'icon-image': 'town-hall-15',
+          'icon-allow-overlap': true,
+        },
+        filter: ['==', 'type', 'residence'],
+      });
+      map.on('click', 'image', (e) => {
+        const { geometry, properties } = e.features[0];
+        const coordinates = geometry.coordinates.slice();
+        const {
+          url,
+          name,
+          width,
+          height,
+          imageWidth,
+          imageHeight,
+          size,
+          dateTimeOriginal,
+        } = properties;
+        const ratio = width / height;
+        const w = 200;
+        const h = w / ratio;
+        const image = `<img src="${url}" width="${w}" height="${h}" /><br />${imageWidth}<br />${imageHeight}<br />${size}<br />${dateTimeOriginal}<br /><a href="${url}" target="_blank">${name}</a>`;
+
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(image)
+          .addTo(map);
+      });
+
+      map.on('click', 'pass', (e) => {
+        const { geometry, properties } = e.features[0];
+        const coordinates = geometry.coordinates.slice();
+        const {
+          name,
+          desc,
+          cmt,
+          coordinates: coord,
+        } = properties;
+        let html = `${name} (${JSON.parse(coord)[2]} m)`;
+        if (desc && cmt) {
+          html = `${html}<br />${desc}<br />${cmt.replace(/\r\n\r\n/g, '<br />')}`;
+        }
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(html)
+          .addTo(map);
+      });
+
+      map.on('click', 'residence', (e) => {
+        const { geometry, properties } = e.features[0];
+        const coordinates = geometry.coordinates.slice();
+        const {
+          name,
+          desc,
+          cmt,
+          coordinates: coord,
+        } = properties;
+        let html = `${name} (${JSON.parse(coord)[2]} m)`;
+        if (desc && cmt) {
+          html = `${html}<br />${desc}<br />${cmt.replace(/\r\n/g, '<br />')}`;
+        }
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(html)
+          .addTo(map);
+      });
+
+      map.on('click', 'route', (e) => {
+        const { geometry, properties } = e.features[0];
+        const coordinates = geometry.coordinates[0].slice();
+        const {
+          name,
+          distance,
+          elevationHigh,
+          elevationLow,
+          averageGrade,
+          maximumGrade,
+          totalElevationGain,
+          totalElevationLoss,
+          startElevation,
+          endElevation,
+        } = properties;
+        let html = `${name}`;
+        if (distance && elevationHigh && elevationLow) {
+          html = `${html}<br />${distance}<br />${elevationHigh}<br />${elevationLow}`
+        }
+        if (averageGrade && maximumGrade) {
+          html = `${html}<br />${averageGrade}<br />${maximumGrade}`;
+        }
+        if (totalElevationGain && totalElevationLoss && startElevation && endElevation) {
+          html = `${html}<br />${totalElevationGain}<br />${totalElevationLoss}<br />${startElevation}<br />${endElevation}`;
+        }
+        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+          coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        }
+
+        if (html) {
+          new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(html)
+            .addTo(map);
+        }
+      });
+
+      map.on('mouseenter', 'image', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'image', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      map.on('mouseenter', 'pass', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'pass', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      map.on('mouseenter', 'residence', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'residence', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      map.on('mouseenter', 'route', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'route', () => {
+        map.getCanvas().style.cursor = '';
       });
     })
 
@@ -126,7 +316,7 @@ const MapboxField = ({ record, ids, data }) => {
     return () => {
       map.remove();
     };
-  }, [record, ids, data])
+  }, [record, ids, data, geoJsonData])
 
   // You can use other `useEffect` hooks to update the state of the map
   // based on incoming props.  Just beware that you might need to add additional
