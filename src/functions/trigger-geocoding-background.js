@@ -107,4 +107,6 @@ const handler = async (event) => {
   };
 };
 
-exports.handler = sentry.wrapHandler(handler);
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});
