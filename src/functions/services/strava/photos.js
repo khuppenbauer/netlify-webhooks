@@ -6,7 +6,7 @@ const activities = require('../../methods/activities');
 const messages = require('../../methods/messages');
 const stravaLib = require('../../libs/strava');
 
-const processPhotos = async (event, foreignKey, dropboxSync) => {
+const processPhotos = async (event, foreignKey, dropboxSync, processMessage) => {
   const existingActivities = await Activity.find({
     foreignKey,
   });
@@ -19,7 +19,7 @@ const processPhotos = async (event, foreignKey, dropboxSync) => {
     type = 'update';
     activityId = existingActivities[0]._id;
   }
-  const photos = await stravaLib.photos(event, activityId, foreignKey, dropboxSync);
+  const photos = await stravaLib.photos(event, activityId, foreignKey, dropboxSync, processMessage);
   const activity = {
     photos,
     foreignKey,
@@ -33,9 +33,9 @@ const processPhotos = async (event, foreignKey, dropboxSync) => {
   }
 }
 
-module.exports = async (event, message, dropboxSync) => {
+module.exports = async (event, message, dropboxSync, processMessage) => {
   const data = JSON.parse(event.body);
   const { object_id: foreignKey } = data;
-  await processPhotos(event, foreignKey, dropboxSync);
+  await processPhotos(event, foreignKey, dropboxSync, processMessage);
   await messages.create(event, { foreignKey, app: 'strava', event: message });
 };

@@ -39,7 +39,8 @@ const handler = async (event) => {
     } else if (action === 'photos') {
       const { dropboxSync } = event.queryStringParameters;
       const message = 'save_photos';
-      await strava.photos(event, message, dropboxSync);
+      const processMessage = 'process_photo';
+      await strava.photos(event, message, dropboxSync, processMessage);
     } else if (action === 'create') {
       const message = 'create_activity';
       await strava.create(event, message);
