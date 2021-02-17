@@ -12,14 +12,14 @@ const saveFile = async (event, message, data) => {
   const mimeType = mime.lookup(name);
   const extension = mime.extension(mimeType);
   const isImage = mimeType.startsWith('image');
+  const externalUrl = await dropboxLib.link(id);
+
   let fileData;
-  let externalUrl;
   let imageData;
   let coordinate;
   let coords;
 
   if (isImage) {
-    externalUrl = await dropboxLib.link(id);
     fileData = await filesLib.data(externalUrl, 'binary');
     const exif = await exifr.parse(fileData);
     if (exif) {
