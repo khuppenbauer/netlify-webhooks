@@ -1,5 +1,5 @@
 {
-  "name": "netlify-functions-boilerplate",
+  "name": "netlify-webhooks",
   "version": "1.0.0",
   "author": "Kerstin Huppenbauer",
   "license": "MIT",
@@ -26,6 +26,8 @@
     "dotenv": "^8.2.0",
     "exifr": "^6.0.0",
     "file-type": "^15.0.0",
+    "graphql": "^15.5.0",
+    "graphql-request": "^3.4.0",
     "mapbox-gl": "^2.0.1",
     "mime-types": "^2.1.27",
     "mongoose": "^5.9.15",
