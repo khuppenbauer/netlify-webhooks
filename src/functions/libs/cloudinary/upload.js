@@ -16,8 +16,10 @@ module.exports = async (data) => {
     _id,
     externalUrl,
     path_display: pathDisplay,
+    mimeType,
   } = data;
-  if (externalUrl) {
+  const isImage = mimeType.startsWith('image');
+  if (isImage) {
     const { dir, name } = path.parse(pathDisplay);
     const publicId = `${dir.replace(/\//, '')}/${name}`;
     const res = await cloudinary.uploader.upload(externalUrl,
