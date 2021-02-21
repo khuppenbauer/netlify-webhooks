@@ -5,6 +5,7 @@ const File = require('./models/file');
 const Track = require('./models/track');
 const sentry = require('./libs/sentry');
 const logs = require('./methods/logs');
+const messages = require('./methods/messages');
 const filesLib = require('./libs/files');
 
 const getCoords = async (date) => {
@@ -68,6 +69,7 @@ const getCoords = async (date) => {
 
 const handler = async (event) => {
   const startTime = new Date().getTime();
+  const message = 'update_file';
   if (event.httpMethod === 'POST') {
     const filter = {
       folder: '/images',
@@ -80,6 +82,7 @@ const handler = async (event) => {
       const accum = await lastPromise;
       const {
         dateTimeOriginal,
+        path_display: pathDisplay,
         _id: id,
       } = file;
       if (dateTimeOriginal) {
@@ -90,6 +93,11 @@ const handler = async (event) => {
             lon: coordinate[0],
           };
           await File.findByIdAndUpdate(id, { coords });
+          const messageObject = {
+            ...event,
+            body: JSON.stringify({ _id: id, path_display: pathDisplay }),
+          };
+          await messages.create(messageObject, { foreignKey: pathDisplay, app: 'messageQueue', event: message });
           await filesLib.feature(file, coordinate);
         }
       }
