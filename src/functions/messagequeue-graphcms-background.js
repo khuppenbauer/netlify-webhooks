@@ -20,7 +20,7 @@ const handler = async (event) => {
         ...event,
         body: JSON.stringify(res),
       };
-      await messages.create(messageObject, { foreignKey: res.public_id, app: 'graphcms', event: message });
+      await messages.create(messageObject, { foreignKey: data.path_display, app: 'graphcms', event: message });
     }
     return {
       statusCode: 200,
@@ -33,4 +33,6 @@ const handler = async (event) => {
   };
 };
 
-exports.handler = sentry.wrapHandler(handler);
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});
