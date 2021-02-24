@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
+const Message = require('../../models/message');
 const messages = require('../messages');
 
 module.exports = async (event, metaData, message) => {
@@ -23,6 +24,14 @@ module.exports = async (event, metaData, message) => {
       ...event,
       body: JSON.stringify({ ...metaData, _id: id }),
     };
-    await messages.create(messageObject, { foreignKey: metaData.path_display, app: 'messageQueue', event: message });
+    const messageData = {
+      foreignKey: metaData.path_display,
+      app: 'messageQueue',
+      event: message,
+    };
+    const existingMessage = await Message.find(messageData);
+    if (existingMessage.length === 0) {
+      await messages.create(messageObject, messageData);
+    }
   }
 };
