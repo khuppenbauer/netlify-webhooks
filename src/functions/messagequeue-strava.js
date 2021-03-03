@@ -3,17 +3,18 @@ const strava = require('./services/strava');
 const messages = require('./methods/messages');
 const sentry = require('./libs/sentry');
 
-const processSegments = async (event, message, segmentEfforts, foreignKey) => {
-  const messageData = {
-    foreignKey,
-    app: 'strava',
-    event: message,
-  }
+const processSegments = async (event, message, segmentEfforts) => {
   await segmentEfforts.reduce(async (lastPromise, segmentEffort) => {
     const accum = await lastPromise;
     const { segment } = segmentEffort;
-    const existing = await Feature.find({ foreignKey: segment.id });
+    const { id: foreignKey } = segment;
+    const existing = await Feature.find({ foreignKey });
     if (existing.length === 0) {
+      const messageData = {
+        foreignKey,
+        app: 'strava',
+        event: message,
+      }
       const messageObject = {
         ...event,
         body: JSON.stringify(segment),
@@ -34,7 +35,7 @@ const handler = async (event) => {
       if (includeSegments === 'true') {
         const { id, segment_efforts: segmentEfforts } = activityData;
         const segmentsMessage = 'parse_segments';
-        await processSegments(event, segmentsMessage, segmentEfforts, id);
+        await processSegments(event, segmentsMessage, segmentEfforts);
       }
     } else if (action === 'photos') {
       const { dropboxSync } = event.queryStringParameters;

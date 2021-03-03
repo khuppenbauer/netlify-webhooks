@@ -14,6 +14,9 @@ const handler = async (event) => {
     } else if (type === 'file') {
       message = 'add_file';
       res = await graphcms.asset(data);
+    } else if (type === 'segment') {
+      message = 'add_segment';
+      res = await graphcms.trail(data);
     }
     if (res) {
       const messageObject = {
