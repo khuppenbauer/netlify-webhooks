@@ -69,7 +69,7 @@ const saveFile = async (event, message, data) => {
   };
   await files.create(event, metaData, message);
   if (coordinate) {
-    await filesLib.feature(metaData, coordinate);
+    await filesLib.feature(event, metaData, coordinate);
   }
 }
 

@@ -4,7 +4,7 @@ const db = require('../../database/mongodb');
 const features = require('../../methods/features');
 const coordinatesLib = require('../../libs/coordinates');
 
-const createFeature = async (geoJson, type, source) => {
+const createFeature = async (event, geoJson, type, source) => {
   const { properties, geometry } = geoJson.features[0];
   const { type: geometryType, coordinates } = geometry;
   const {
@@ -44,11 +44,11 @@ const createFeature = async (geoJson, type, source) => {
         lon: parseFloat(bounds[1].longitude.toFixed(6)),
       },
     };
-    return features.create(feature);
+    return features.create(event, feature);
   }
 }
 
-module.exports = async (geoJson, type, source) => {
+module.exports = async (event, geoJson, type, source) => {
   geoJson.features[0].properties.type = type;
-  await createFeature(geoJson, type, source);
+  await createFeature(event, geoJson, type, source);
 };

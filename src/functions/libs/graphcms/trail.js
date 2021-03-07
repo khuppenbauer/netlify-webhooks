@@ -1,130 +1,94 @@
 const dotenv = require('dotenv').config();
+const { GraphQLClient } = require('graphql-request');
 const mongoose = require('mongoose');
-const { GraphQLClient, gql } = require('graphql-request');
 const db = require('../../database/mongodb');
+const Feature = require('../../models/feature');
+const File = require('../../models/file');
+const mongodb = require('../mongodb');
+const graphcmsMutation = require('./mutation');
+const graphcmsQuery = require('./query');
+const graphcmsAsset = require('./asset');
 
 const url = process.env.GRAPHCMS_API_URL;
 const token = process.env.GRAPHCMS_API_TOKEN;
 
-module.exports = async (data) => {
-  const {
-    id: foreignKey,
-    name,
-    city,
-    state,
-    country,
-    distance,
-    average_grade: averageGrade,
-    maximum_grade: maximumGrade,
-    elevation_high: elevationHigh,
-    elevation_low: elevationLow,
-    start_latitude: startLat,
-    start_longitude: startLng,
-    end_latitude: endLat,
-    end_longitude: endLng,
-  } = data;
-
-  const graphcms = new GraphQLClient(
-    url,
-    {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
+const graphcms = new GraphQLClient(
+  url,
+  {
+    headers: {
+      authorization: `Bearer ${token}`,
     },
-  );
+  },
+);
 
-  const mutation = gql`
-    mutation AddTrail(
-        $name: String,
-        $foreignKey: String!,
-        $city: String,
-        $state: String,
-        $country: String,
-        $distance: Float,
-        $averageGrade: Float,
-        $maximumGrade: Float,
-        $elevationLow: Float,
-        $elevationHigh: Float,
-        $startLatLng: LocationInput,
-        $endLatLng: LocationInput,
-      ) {
-      upsertTrail(
-          where: {
-            foreignKey: $foreignKey 
-          }
-          upsert: {
-            create: {
-              name: $name,
-              foreignKey: $foreignKey,
-              city: $city,
-              state: $state,
-              country: $country,
-              distance: $distance,
-              averageGrade: $averageGrade,
-              maximumGrade: $maximumGrade,
-              elevationHigh: $elevationHigh,
-              elevationLow: $elevationLow,
-              startLatLng: $startLatLng,
-              endLatLng: $endLatLng,
-            }
-            update: {
-              name: $name,
-              foreignKey: $foreignKey,
-              city: $city,
-              state: $state,
-              country: $country,
-              distance: $distance,
-              averageGrade: $averageGrade,
-              maximumGrade: $maximumGrade,
-              elevationHigh: $elevationHigh,
-              elevationLow: $elevationLow,
-              startLatLng: $startLatLng,
-              endLatLng: $endLatLng,
-            }
-          }
-      ) {
-        name
-        foreignKey
-        city
-        state
-        country
-        distance
-        averageGrade
-        maximumGrade
-        elevationLow
-        elevationHigh
-        startLatLng {
-          latitude
-          longitude
-        }
-        endLatLng {
-          latitude
-          longitude
+const addPhotos = async (foreignKey, geoJson) => {
+  const { geometry } = geoJson.features[0];
+  const photos = await mongodb.featureByCoords(geometry, 'image');
+  if (photos.length > 0) {
+    const trailMutation = await graphcmsMutation.updateTrailConnectAssets();
+    await photos.reduce(async (lastPromise, photo) => {
+      const accum = await lastPromise;
+      const { meta: imageMeta } = photo;
+      const { pathDisplay } = imageMeta;
+      const file = await File.find({ path_display: pathDisplay });
+      if (file.length > 0) {
+        const { _id, sha1 } = file[0];
+        const query = await graphcmsQuery.getAsset();
+        const queryVariables = {
+          sha1,
+        };
+        const { asset } = await graphcms.request(query, queryVariables);
+        if (asset) {
+          const trailMutationVariables = {
+            sha1,
+            foreignKey,
+          };
+          await graphcms.request(trailMutation, trailMutationVariables);
+        } else {
+          await graphcmsAsset({ _id });
         }
       }
-    }
-  `;
+      return [...accum];
+    }, Promise.resolve([]));
+  }
+};
 
-  const variables = {
-    name,
-    foreignKey: `${foreignKey}`,
-    city,
-    state,
-    country,
-    distance,
-    averageGrade,
-    maximumGrade,
-    elevationHigh,
-    elevationLow,
+module.exports = async (data) => {
+  const { feature } = data;
+  const record = await Feature.findById(feature);
+  const {
+    minCoords,
+    maxCoords,
+    meta,
+    geoJson,
+    foreignKey,
+  } = record;
+  const {
+    startLatLng,
+    endLatLng,
+  } = meta;
+
+  const mutation = await graphcmsMutation.upsertTrail();
+  const mutationVariables = {
+    ...record._doc,
+    ...meta,
     startLatLng: {
-      latitude: startLat,
-      longitude: startLng,
+      latitude: startLatLng[0],
+      longitude: startLatLng[1],
     },
     endLatLng: {
-      latitude: endLat,
-      longitude: endLng,
+      latitude: endLatLng[0],
+      longitude: endLatLng[1],
+    },
+    minCoords: {
+      latitude: minCoords.lat,
+      longitude: minCoords.lon,
+    },
+    maxCoords: {
+      latitude: maxCoords.lat,
+      longitude: maxCoords.lon,
     },
   };
-
-  return graphcms.request(mutation, variables);
+  await graphcms.request(mutation, mutationVariables);
+  await addPhotos(foreignKey, geoJson);
 };

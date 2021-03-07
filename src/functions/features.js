@@ -23,9 +23,11 @@ exports.handler = async (event) => {
     case 'POST':
       if (type === 'filter') {
         return features.filter(event);
-      } else {
-        return features.create(event);
       }
+      return {
+        statusCode: 500,
+        body: 'invalid type in POST request',
+      };
       /* PUT /.netlify/functions/tracks/123456 */
     case 'PUT':
       if (segments.length === 1) {

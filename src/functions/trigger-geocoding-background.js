@@ -98,7 +98,7 @@ const handler = async (event) => {
             body: JSON.stringify({ _id: id, path_display: pathDisplay }),
           };
           await messages.create(messageObject, { foreignKey: pathDisplay, app: 'messageQueue', event: message });
-          await filesLib.feature(file, coordinate);
+          await filesLib.feature(event, file, coordinate);
         }
       }
       return [...accum];

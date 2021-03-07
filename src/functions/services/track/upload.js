@@ -15,7 +15,7 @@ const getPath = async (fileName, outtype) => {
   return `/convert/${extension}/${newFileName}`;
 };
 
-const createFeature = async (track, geoJson) => {
+const createFeature = async (event, track, geoJson) => {
   const {
     name,
     startCity: city,
@@ -57,7 +57,7 @@ const createFeature = async (track, geoJson) => {
     minCoords,
     maxCoords,
   };
-  return features.create(feature);
+  return features.create(event, feature);
 };
 
 module.exports = async (event, message) => {
@@ -76,7 +76,7 @@ module.exports = async (event, message) => {
   const { coordinates } = geometry;
   const elevation = await coordinatesLib.elevation(coordinates);
   const existingTrack = await Track.findById(track);
-  const feature = await createFeature(existingTrack, geoJson);
+  const feature = await createFeature(event, existingTrack, geoJson);
   const source = {
     name: 'gpsbabel',
     foreignKey: name,

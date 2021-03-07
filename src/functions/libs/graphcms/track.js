@@ -1,11 +1,21 @@
 const dotenv = require('dotenv').config();
+const { GraphQLClient } = require('graphql-request');
 const mongoose = require('mongoose');
-const { GraphQLClient, gql } = require('graphql-request');
 const db = require('../../database/mongodb');
 const Track = require('../../models/track');
+const graphcmsMutation = require('./mutation');
 
 const url = process.env.GRAPHCMS_API_URL;
 const token = process.env.GRAPHCMS_API_TOKEN;
+
+const graphcms = new GraphQLClient(
+  url,
+  {
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  },
+);
 
 module.exports = async (data) => {
   const { track } = data;
@@ -17,134 +27,8 @@ module.exports = async (data) => {
     endCoords,
   } = record;
 
-  const graphcms = new GraphQLClient(
-    url,
-    {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    },
-  );
-
-  const mutation = gql`
-    mutation AddTrack(
-        $name: String!, 
-        $date: DateTime, 
-        $startTime: DateTime, 
-        $endTime: DateTime,
-        $distance: Float,
-        $totalElevationGain: Float,
-        $totalElevationLoss: Float,
-        $elevLow: Float,
-        $elevHigh: Float,
-        $startElevation: Float,
-        $endElevation: Float,
-        $minCoords: LocationInput,
-        $maxCoords: LocationInput,
-        $startCoords: LocationInput,
-        $endCoords: LocationInput,
-        $startCity: String,
-        $startState: String,
-        $startCountry: String,
-        $endCity: String,
-        $endState: String,
-        $endCountry: String,
-        $geoJson: Json,
-      ) {
-      upsertTrack(
-          where: {
-            name: $name 
-          }
-          upsert: {
-            create: {
-              name: $name,
-              date: $date,
-              startTime: $startTime,
-              endTime: $endTime,
-              distance: $distance,
-              totalElevationGain: $totalElevationGain,
-              totalElevationLoss: $totalElevationLoss,
-              elevLow: $elevLow,
-              elevHigh: $elevHigh,
-              startElevation: $startElevation,
-              endElevation: $endElevation,
-              minCoords: $minCoords,
-              maxCoords: $maxCoords,
-              startCoords: $startCoords,
-              endCoords: $endCoords,
-              startCity: $startCity,
-              startState: $startState,
-              startCountry: $startCountry,
-              endCity: $endCity,
-              endState: $endState,
-              endCountry: $endCountry,
-              geoJson: $geoJson,
-            }
-            update: {
-              name: $name,
-              date: $date,
-              startTime: $startTime,
-              endTime: $endTime,
-              distance: $distance,
-              totalElevationGain: $totalElevationGain,
-              totalElevationLoss: $totalElevationLoss,
-              elevLow: $elevLow,
-              elevHigh: $elevHigh,
-              startElevation: $startElevation,
-              endElevation: $endElevation,
-              minCoords: $minCoords,
-              maxCoords: $maxCoords,
-              startCoords: $startCoords,
-              endCoords: $endCoords,
-              startCity: $startCity,
-              startState: $startState,
-              startCountry: $startCountry,
-              endCity: $endCity,
-              endState: $endState,
-              endCountry: $endCountry,
-              geoJson: $geoJson,
-            }
-          }
-      ) {
-        name
-        date
-        startTime
-        endTime
-        distance
-        totalElevationGain
-        totalElevationLoss
-        elevLow
-        elevHigh
-        startElevation
-        endElevation
-        minCoords {
-          latitude
-          longitude
-        }
-        maxCoords {
-          latitude
-          longitude
-        }
-        startCoords {
-          latitude
-          longitude
-        }
-        endCoords {
-          latitude
-          longitude
-        }
-        startCity
-        startState
-        startCountry
-        endCity
-        endState
-        endCountry
-        geoJson
-      }
-    }
-  `;
-
-  const variables = {
+  const mutation = await graphcmsMutation.upsertTrack();
+  const mutationVariables = {
     ...record._doc,
     minCoords: {
       latitude: minCoords.lat,
@@ -164,5 +48,5 @@ module.exports = async (data) => {
     },
   };
 
-  return graphcms.request(mutation, variables);
+  return graphcms.request(mutation, mutationVariables);
 };

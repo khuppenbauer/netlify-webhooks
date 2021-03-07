@@ -18,7 +18,7 @@ const parseData = async (event) => {
       ],
       type: 'FeatureCollection',
     };
-    await featureService.create(featureCollection, name, 'poi');
+    await featureService.create(event, featureCollection, name, 'poi');
     return [...accum, {}];
   }, Promise.resolve([]));
 };

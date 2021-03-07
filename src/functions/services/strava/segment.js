@@ -26,7 +26,7 @@ const createFile = async (event, fileName, path) => {
   await files.create(event, metaData);
 }
 
-const createFeature = async (segment, geoJson, gpxFile, bounds) => {
+const createFeature = async (event, segment, geoJson, gpxFile, bounds) => {
   if (geoJson) {
     const {
       id,
@@ -69,7 +69,7 @@ const createFeature = async (segment, geoJson, gpxFile, bounds) => {
         lon: parseFloat(bounds.maxLng.toFixed(6)),
       },
     };
-    return features.create(feature);
+    return features.create(event, feature);
   }
   return false;
 }
@@ -96,7 +96,7 @@ const processSegment = async (event, segment, saveSegmentsGpx) => {
     gpxFile = await dropboxLib.upload(gpx, path);
   }
   if (geoJson) {
-    await createFeature(segment, geoJson, gpxFile, bounds);
+    await createFeature(event, segment, geoJson, gpxFile, bounds);
   }
 }
 

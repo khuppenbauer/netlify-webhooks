@@ -3,7 +3,7 @@ const featureService = require('../../services/feature');
 
 const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
 
-module.exports = async (file, coordinate) => {
+module.exports = async (event, file, coordinate) => {
   const {
     name,
     dateTimeOriginal,
@@ -11,6 +11,7 @@ module.exports = async (file, coordinate) => {
     imageWidth,
     imageHeight,
     size,
+    sha1,
   } = file;
   const feature = {
     type: 'Feature',
@@ -22,6 +23,7 @@ module.exports = async (file, coordinate) => {
       imageWidth,
       imageHeight,
       size,
+      sha1,
     },
     geometry: {
       type: 'Point',
@@ -35,5 +37,5 @@ module.exports = async (file, coordinate) => {
     ],
     type: 'FeatureCollection',
   };
-  await featureService.create(featureCollection, 'image', 'image');
+  await featureService.create(event, featureCollection, 'image', 'image');
 };
