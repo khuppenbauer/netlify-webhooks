@@ -107,8 +107,7 @@ const updateTrack = async (asset, record, mutation) => {
   }
 };
 
-const updateTrail = async (sha1, record) => {
-  const { coords } = record;
+const updateTrail = async (sha1, coords) => {
   const { lat, lon } = coords;
   const geometry = { type: 'Point', coordinates: [lon, lat] };
   const features = await mongodb.featureByCoords(geometry, 'segment');
@@ -130,15 +129,16 @@ const updateTrail = async (sha1, record) => {
 module.exports = async (data) => {
   const { _id: file } = data;
   const record = await File.findById(file);
-  const { folder, extension } = record;
+  const { folder, extension, coords, sha1 } = record;
   const asset = await uploadAsset(record);
   if (asset) {
     const { updateAsset: res } = await updateAsset(asset, record);
     let mutation;
     if (folder === '/images') {
-      const { sha1 } = res;
-      await updateTrail(sha1, record);
-      mutation = await graphcmsMutation.upsertTrackConnectAssets('photos');
+      if (coords) {
+        await updateTrail(sha1, coords);
+        mutation = await graphcmsMutation.upsertTrackConnectAssets('photos');
+      }
     } else {
       let property;
       if (folder === '/preview') {
