@@ -1,32 +1,41 @@
 const dotenv = require('dotenv').config();
-const dayJs = require('dayjs');
-const messages = require('../../methods/messages');
+const mongoose = require('mongoose');
+const db = require('../../database/mongodb');
+const activities = require('../../methods/activities');
 const stravaLib = require('../../libs/strava');
 
-const createMessage = async (event, message, activity) => {
-  const { id, start_date: startDate } = activity;
-  const messageBody = {
-    aspect_type: 'create',
-    event_time: dayJs(startDate).unix(),
-    object_id: id,
-    object_type: 'activity',
-    owner_id: process.env.STRAVA_OWNER_ID,
-    subscription_id: process.env.STRAVA_SUBSCRIPTION_ID,
+const addActivity = async (activityData) => {
+  const {
+    id: foreignKey,
+    name,
+    type,
+    start_date,
+    distance,
+    elev_low,
+    elev_high,
+    total_elevation_gain,
+  } = activityData;
+  const activity = {
+    _id: mongoose.Types.ObjectId(),
+    name,
+    type,
+    foreignKey,
+    start_date,
+    distance,
+    elev_low,
+    elev_high,
+    total_elevation_gain,
+    status: 'new',
   };
-  const messageObject = {
-    ...event,
-    body: JSON.stringify(messageBody),
-  };
-  await messages.create(messageObject, { foreignKey: id, app: 'strava', event: message });
-  return message;
+  await activities.create(activity);
 };
 
 const getActivities = async (event, message, page, perPage, limit) => {
   const url = `athlete/activities?page=${page}&per_page=${perPage}`;
-  const activities = await stravaLib.api(url);
-  await activities.reduce(async (lastPromise, activity) => {
+  const items = await stravaLib.api(url);
+  await items.reduce(async (lastPromise, item) => {
     const accum = await lastPromise;
-    await createMessage(event, message, activity);
+    await addActivity(item);
     return [...accum, {}];
   }, Promise.resolve([]));
   if (activities.length > 0 && (limit === 0 || page < limit)) {

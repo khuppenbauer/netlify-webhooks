@@ -77,6 +77,7 @@ const processActivity = async (event, foreignKey) => {
     ...activityData,
     gpxFile,
     foreignKey,
+    status: 'synced',
     _id: activityId,
   };
 

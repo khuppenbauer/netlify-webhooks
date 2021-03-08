@@ -67,6 +67,9 @@ const schema = new mongoose.Schema({
   visibility: {
     type: String,
   },
+  status: {
+    type: String,
+  },
 }, schemaOptions);
 const Activity = mongoose.model('activity', schema);
 
