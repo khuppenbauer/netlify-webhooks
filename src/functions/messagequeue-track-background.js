@@ -5,6 +5,7 @@ const handler = async (event) => {
   if (event.httpMethod === 'POST') {
     const { action } = event.queryStringParameters;
     if (action === 'create') {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const message = 'create_track';
       await track.create(event, message);
     } else if (action === 'image') {
