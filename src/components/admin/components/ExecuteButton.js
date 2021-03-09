@@ -13,7 +13,7 @@ const ExecuteButton = ({ record }) => {
   const redirectTo = useRedirect();
 
   const [execute, { loading }] = useUpdate(
-    'messageQueue',
+    'trigger-messagequeue-background',
     record.id,
     {},
     record,
