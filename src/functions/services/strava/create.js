@@ -38,7 +38,7 @@ const getActivities = async (event, message, page, perPage, limit) => {
     await addActivity(item);
     return [...accum, {}];
   }, Promise.resolve([]));
-  if (activities.length > 0 && (limit === 0 || page < limit)) {
+  if (items.length > 0 && (limit === 0 || page < limit)) {
     const nextPage = page + 1;
     await getActivities(event, message, nextPage, perPage, limit);
   }
