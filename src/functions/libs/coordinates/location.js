@@ -5,6 +5,7 @@ const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
 const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
 
 module.exports = async (lat, lon) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const params = {
     key: locationServiceAccessToken,
     lat,

@@ -11,7 +11,6 @@ const parseData = async (event) => {
   const geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data, name);
   await geoJson.features.reduce(async (lastPromise, feature) => {
     const accum = await lastPromise;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     const featureCollection = {
       features: [
         feature,

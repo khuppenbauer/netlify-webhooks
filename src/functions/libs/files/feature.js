@@ -30,7 +30,6 @@ module.exports = async (event, file, coordinate) => {
       coordinates: coordinate,
     },
   };
-  await new Promise((resolve) => setTimeout(resolve, 1000));
   const featureCollection = {
     features: [
       feature,
