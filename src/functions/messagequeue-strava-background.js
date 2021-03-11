@@ -40,8 +40,7 @@ const handler = async (event) => {
     } else if (action === 'photos') {
       const { dropboxSync } = event.queryStringParameters;
       const message = 'save_photos';
-      const processMessage = 'process_photo';
-      await strava.photos(event, message, dropboxSync, processMessage);
+      await strava.photos(event, message, dropboxSync);
     } else if (action === 'create') {
       const message = 'create_activity';
       await strava.create(event, message);
@@ -61,4 +60,6 @@ const handler = async (event) => {
   };
 };
 
-exports.handler = sentry.wrapHandler(handler);
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});

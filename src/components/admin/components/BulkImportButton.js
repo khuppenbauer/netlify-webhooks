@@ -15,7 +15,7 @@ const BulkImportButton = ({ resource, selectedIds }) => {
   const unselectAll = useUnselectAll();
   const refresh = useRefresh();
   const [executeMany, { loading }] = useUpdateMany(
-    'trigger-activities',
+    'trigger-activities-background',
     selectedIds,
     {},
     {
