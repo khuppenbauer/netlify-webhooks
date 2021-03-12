@@ -48,6 +48,7 @@ const ActivitiesFilter = (props) => {
     {
       $facet: {
         type: facet('type'),
+        status: facet('status'),
       },
     },
   ];
@@ -64,7 +65,7 @@ const ActivitiesFilter = (props) => {
   if (data === undefined || data.length === 0) {
     return [];
   }
-  const { type } = data[0];
+  const { type, status } = data[0];
   return (
     <Filter {...props}>
       <SearchInput source="q" alwaysOn />
@@ -72,6 +73,11 @@ const ActivitiesFilter = (props) => {
         source="type"
         key="type-filter"
         choices={type.map((typeItem) => ({ id: typeItem.value, name: `${typeItem.value} (${typeItem.count})` }))}
+      />
+      <SelectInput
+        source="status"
+        key="status-filter"
+        choices={status.map((statusItem) => ({ id: statusItem.value, name: `${statusItem.value} (${statusItem.count})` }))}
       />
     </Filter>
   );
