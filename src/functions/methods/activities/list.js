@@ -32,7 +32,7 @@ const filteredResult = async (event) => {
     sort,
   };
   try {
-    result = await Activity.find(search, null, options);
+    result = await Activity.find(search, { segment_efforts: 0, athlete: 0 }, options);
   } catch (err) {
     return {
       statusCode: 400,
