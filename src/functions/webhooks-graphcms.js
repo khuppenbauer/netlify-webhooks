@@ -3,6 +3,7 @@ const logs = require('./methods/logs');
 
 exports.handler = async (event) => {
   const startTime = new Date().getTime();
+  console.log(event);
   if (event.httpMethod === 'POST') {
     const body = JSON.parse(event.body);
     const { data } = body;
