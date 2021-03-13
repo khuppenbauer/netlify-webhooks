@@ -41,6 +41,9 @@ const ActivitiesList = (props) => {
         <TextField source="type" />
         <NumeralField source="distance" options={{ from: 'm', precision: 2 }} style={style}/>
         <NumberField source="total_elevation_gain" options={{ style: 'unit', unit: 'meter' }} style={style} />
+        <TextField source="city" />
+        <TextField source="state" />
+        <TextField source="country" />
         <DownloadField source="gpxFile" label="Download" />
       </Datagrid>
     </List>

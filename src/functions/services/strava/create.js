@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const activities = require('../../methods/activities');
 const stravaLib = require('../../libs/strava');
+const coordinatesLib = require('../../libs/coordinates');
+const Activity = require('../../models/activity');
 
 const addActivity = async (activityData) => {
   const {
@@ -14,9 +16,12 @@ const addActivity = async (activityData) => {
     elev_low,
     elev_high,
     total_elevation_gain,
+    start_latitude: latitude,
+    start_longitude: longitude,
   } = activityData;
+  const location = await coordinatesLib.location(latitude, longitude);
+  const { city, state, country } = location;
   const activity = {
-    _id: mongoose.Types.ObjectId(),
     name,
     type,
     foreignKey,
@@ -25,9 +30,24 @@ const addActivity = async (activityData) => {
     elev_low,
     elev_high,
     total_elevation_gain,
-    status: 'new',
+    city,
+    state,
+    country,
   };
-  await activities.create(activity);
+  const existing = await Activity.find({ foreignKey });
+  const id = (existing.length === 0) ? mongoose.Types.ObjectId() : existing[0]._id;
+
+  if (existing.length > 0) {
+    await Activity.findByIdAndUpdate(id, activity);
+  } else {
+    await Activity.create(
+      {
+        status: 'new',
+        _id: id,
+        ...activity,
+      },
+    );
+  }
 };
 
 const getActivities = async (event, message, page, perPage, limit) => {

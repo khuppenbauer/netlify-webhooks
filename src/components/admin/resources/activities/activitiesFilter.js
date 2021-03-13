@@ -49,6 +49,9 @@ const ActivitiesFilter = (props) => {
       $facet: {
         type: facet('type'),
         status: facet('status'),
+        city: facet('city'),
+        state: facet('state'),
+        country: facet('country'),
       },
     },
   ];
@@ -65,7 +68,13 @@ const ActivitiesFilter = (props) => {
   if (data === undefined || data.length === 0) {
     return [];
   }
-  const { type, status } = data[0];
+  const {
+    type,
+    status,
+    city,
+    state,
+    country,
+  } = data[0];
   return (
     <Filter {...props}>
       <SearchInput source="q" alwaysOn />
@@ -78,6 +87,21 @@ const ActivitiesFilter = (props) => {
         source="status"
         key="status-filter"
         choices={status.map((statusItem) => ({ id: statusItem.value, name: `${statusItem.value} (${statusItem.count})` }))}
+      />
+      <SelectInput
+        source="city"
+        key="city-filter"
+        choices={city.map((cityItem) => ({ id: cityItem.value, name: `${cityItem.value} (${cityItem.count})` }))}
+      />
+      <SelectInput
+        source="state"
+        key="state-filter"
+        choices={state.map((stateItem) => ({ id: stateItem.value, name: `${stateItem.value} (${stateItem.count})` }))}
+      />
+      <SelectInput
+        source="country"
+        key="country-filter"
+        choices={country.map((countryItem) => ({ id: countryItem.value, name: `${countryItem.value} (${countryItem.count})` }))}
       />
     </Filter>
   );

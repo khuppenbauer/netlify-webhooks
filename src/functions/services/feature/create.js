@@ -16,7 +16,7 @@ const createFeature = async (event, geoJson, type, source) => {
     .digest('hex');
   if (geometryType === 'Point') {
     const location = await coordinatesLib.location(coordinates[1], coordinates[0]);
-    const { city, state, country } = location.address;
+    const { city, state, country } = location;
     const boundsParams = {
       point: {
         latitude: coordinates[1],

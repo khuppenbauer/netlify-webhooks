@@ -40,7 +40,7 @@ const createFeature = async (event, segment, geoJson, gpxFile, bounds) => {
       end_latlng: endLatLng,
     } = segment;
     const start = await coordinatesLib.location(startLatLng[0], startLatLng[1]);
-    const { city, state, country } = start.address;
+    const { city, state, country } = start;
     const feature = {
       name,
       type: 'segment',

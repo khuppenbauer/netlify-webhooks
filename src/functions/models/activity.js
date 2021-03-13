@@ -70,6 +70,15 @@ const schema = new mongoose.Schema({
   status: {
     type: String,
   },
+  city: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
 }, schemaOptions);
 const Activity = mongoose.model('activity', schema);
 

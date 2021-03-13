@@ -41,6 +41,8 @@ const getMetaData = async (geoJson) => {
   const elevation = await coordinatesLib.elevation(coordinates);
   const startLocation = await coordinatesLib.location(start[1], start[0]);
   const endLocation = await coordinatesLib.location(end[1], end[0]);
+  const { city: startCity, state: startState, country: startCountry } = startLocation;
+  const { city: endCity, state: endState, country: endCountry } = endLocation;
   return {
     date: time,
     startTime: coordTimes[0],
@@ -65,12 +67,12 @@ const getMetaData = async (geoJson) => {
     },
     startElevation: start[2] ? start[2].toFixed(0) : 0,
     endElevation: end[2] ? end[2].toFixed(0) : 0,
-    startCity: startLocation.address.city,
-    startCountry: startLocation.address.country,
-    startState: startLocation.address.state,
-    endCity: endLocation.address.city,
-    endCountry: endLocation.address.country,
-    endState: endLocation.address.state,
+    startCity,
+    startCountry,
+    startState,
+    endCity,
+    endCountry,
+    endState,
   };
 };
 
