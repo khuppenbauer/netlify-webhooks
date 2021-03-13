@@ -46,7 +46,7 @@
     "speakingurl": "^14.0.1",
     "worker-loader": "^3.0.7",
     "xmlbuilder": "^15.1.1",
-    "xmldom": "^0.3.0"
+    "xmldom": "^0.5.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
