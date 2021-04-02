@@ -10,6 +10,8 @@ const graphcmsQuery = require('./query');
 
 const url = process.env.GRAPHCMS_API_URL;
 const token = process.env.GRAPHCMS_API_TOKEN;
+const cdnUrl = process.env.GRAPHCMS_CDN_URL;
+const cdnToken = process.env.GRAPHCMS_CDN_TOKEN;
 
 const graphcms = new GraphQLClient(
   url,
@@ -20,31 +22,50 @@ const graphcms = new GraphQLClient(
   },
 );
 
-const uploadAsset = async (record) => {
-  const { externalUrl, sha1 } = record;
-  if (externalUrl) {
-    const query = await graphcmsQuery.getAsset();
-    const queryVariables = {
-      sha1,
-    };
+let cdn;
+if (cdnUrl && cdnToken) {
+  cdn = new GraphQLClient(
+    cdnUrl,
+    {
+      headers: {
+        authorization: `Bearer ${cdnToken}`,
+      },
+    },
+  );
+}
 
-    const queryRes = await graphcms.request(query, queryVariables);
-    const { asset: assetObj } = queryRes;
-    if (!assetObj) {
-      const res = await axios({
-        method: 'post',
-        url: `${url}/upload`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        data: `url=${encodeURIComponent(externalUrl)}`,
-      });
-      return res.data.id;
-    }
-    return assetObj.id;
+const uploadAsset = async (record) => {
+  const { externalUrl, sha1, folder } = record;
+  const query = await graphcmsQuery.getAsset();
+  const queryVariables = {
+    sha1,
+  };
+  let uploadUrl;
+  let uploadToken;
+  let queryRes;
+  if (folder !== '/images' && cdn) {
+    uploadUrl = cdnUrl;
+    uploadToken = cdnToken;
+    queryRes = await cdn.request(query, queryVariables);
+  } else {
+    uploadUrl = url;
+    uploadToken = token;
+    queryRes = await graphcms.request(query, queryVariables);
   }
-  return false;
+  const { asset: assetObj } = queryRes;
+  if (!assetObj) {
+    const res = await axios({
+      method: 'post',
+      url: `${uploadUrl}/upload`,
+      headers: {
+        Authorization: `Bearer ${uploadToken}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      data: `url=${encodeURIComponent(externalUrl)}`,
+    });
+    return res.data;
+  }
+  return assetObj;
 };
 
 const updateAsset = async (asset, record) => {
@@ -64,6 +85,9 @@ const updateAsset = async (asset, record) => {
       },
     };
   }
+  if (cdn) {
+    return cdn.request(mutation, mutationVariables);
+  }
   return graphcms.request(mutation, mutationVariables);
 };
 
@@ -72,16 +96,19 @@ const publishAsset = async (asset) => {
   const mutationVariables = {
     id: asset,
   };
+  if (cdn) {
+    return cdn.request(mutation, mutationVariables);
+  }
   return graphcms.request(mutation, mutationVariables);
 };
 
-const updateTrack = async (asset, record, mutation) => {
+const updateTrack = async (asset, record, mutation, variable) => {
   const { source, dateTimeOriginal, coords } = record;
   if (source) {
     const { foreignKey } = source;
     if (foreignKey) {
       const mutationVariables = {
-        id: asset,
+        ...variable,
         name: foreignKey,
       };
       return graphcms.request(mutation, mutationVariables);
@@ -131,9 +158,11 @@ module.exports = async (data) => {
   const record = await File.findById(file);
   const { folder, extension, coords, sha1 } = record;
   const asset = await uploadAsset(record);
-  if (asset) {
-    const { updateAsset: res } = await updateAsset(asset, record);
+  const { id: assetId, url: assetUrl, handle } = asset;
+  if (assetId) {
+    const { updateAsset: res } = await updateAsset(assetId, record);
     let mutation;
+    let mutationVariables;
     if (folder === '/images') {
       if (coords) {
         await updateTrail(sha1, coords);
@@ -152,12 +181,28 @@ module.exports = async (data) => {
       } else if (folder === '/convert/gpx') {
         property = 'gpxFileSmall';
       }
-      mutation = await graphcmsMutation.upsertTrackConnectAsset(property);
+      if (cdn) {
+        let value;
+        if (assetUrl) {
+          value = assetUrl;
+        } else {
+          value = `https://media.graphcms.com/${handle}`;
+        }
+        mutation = await graphcmsMutation.updateTrack(`${property}Url`);
+        mutationVariables = {
+          value,
+        };
+      } else {
+        mutation = await graphcmsMutation.upsertTrackConnectAsset(property);
+        mutationVariables = {
+          id: asset,
+        };
+      }
     }
     if (mutation) {
-      await updateTrack(asset, record, mutation);
+      await updateTrack(assetId, record, mutation, mutationVariables);
     }
-    await publishAsset(asset);
+    await publishAsset(assetId);
     return res;
   }
 };

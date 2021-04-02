@@ -3,7 +3,7 @@ const { gql } = require('graphql-request');
 module.exports = async (property) => {
   return gql`
     mutation ConnectAsset(
-      $id: ID!
+      $id: ID!,
       $name: String!,  
     ) {
       upsertTrack(
