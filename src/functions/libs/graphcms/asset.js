@@ -2,9 +2,13 @@ const dotenv = require('dotenv').config();
 const axios = require('axios');
 const { GraphQLClient } = require('graphql-request');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
 const mongodb = require('../mongodb');
+const dropboxLib = require('../dropbox');
 const graphcmsMutation = require('./mutation');
 const graphcmsQuery = require('./query');
 
@@ -34,6 +38,25 @@ if (cdnUrl && cdnToken) {
   );
 }
 
+const uploadAssetStream = async (record) => {
+  const { foreignKey, name } = record;
+  const data = await dropboxLib.download(foreignKey);
+  await fs.promises.writeFile(name, data);
+  const form = new FormData();
+  form.append('fileUpload', fs.createReadStream(name));
+  const res = axios({
+    method: 'post',
+    url: `${cdnUrl}/upload`,
+    headers: {
+      Authorization: `Bearer ${cdnToken}`,
+      ...form.getHeaders(),
+    },
+    data: form,
+  });
+  fs.promises.unlink(name);
+  return res;
+};
+
 const uploadAsset = async (record) => {
   const { externalUrl, sha1, folder } = record;
   const query = await graphcmsQuery.getAsset();
@@ -43,6 +66,7 @@ const uploadAsset = async (record) => {
   let uploadUrl;
   let uploadToken;
   let queryRes;
+  let res;
   if (folder !== '/images' && cdn) {
     uploadUrl = cdnUrl;
     uploadToken = cdnToken;
@@ -54,15 +78,19 @@ const uploadAsset = async (record) => {
   }
   const { asset: assetObj } = queryRes;
   if (!assetObj) {
-    const res = await axios({
-      method: 'post',
-      url: `${uploadUrl}/upload`,
-      headers: {
-        Authorization: `Bearer ${uploadToken}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      data: `url=${encodeURIComponent(externalUrl)}`,
-    });
+    if (externalUrl) {
+      res = await axios({
+        method: 'post',
+        url: `${uploadUrl}/upload`,
+        headers: {
+          Authorization: `Bearer ${uploadToken}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        data: `url=${encodeURIComponent(externalUrl)}`,
+      });
+    } else {
+      res = await uploadAssetStream(record);
+    }
     return res.data;
   }
   return assetObj;
