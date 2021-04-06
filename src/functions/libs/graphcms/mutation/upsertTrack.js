@@ -25,6 +25,10 @@ module.exports = async () => {
       $endState: String,
       $endCountry: String,
       $geoJson: Json,
+      $gpxFileUrl: String,
+      $gpxFileSmallUrl: String,
+      $geoJsonFileUrl: String,
+      $staticImageUrl: String,
     ) {
       upsertTrack(
         where: {
@@ -54,6 +58,10 @@ module.exports = async () => {
             endState: $endState,
             endCountry: $endCountry,
             geoJson: $geoJson,
+            gpxFileUrl: $gpxFileUrl,
+            gpxFileSmallUrl: $gpxFileSmallUrl,
+            geoJsonFileUrl: $geoJsonFileUrl,
+            staticImageUrl: $staticImageUrl,
           }
           update: {
             name: $name,
@@ -78,6 +86,10 @@ module.exports = async () => {
             endState: $endState,
             endCountry: $endCountry,
             geoJson: $geoJson,
+            gpxFileUrl: $gpxFileUrl,
+            gpxFileSmallUrl: $gpxFileSmallUrl,
+            geoJsonFileUrl: $geoJsonFileUrl,
+            staticImageUrl: $staticImageUrl,
           }
         }
       ) {
@@ -115,6 +127,10 @@ module.exports = async () => {
         endState
         endCountry
         geoJson
+        gpxFileUrl
+        gpxFileSmallUrl
+        geoJsonFileUrl
+        staticImageUrl
       }
     }
   `;

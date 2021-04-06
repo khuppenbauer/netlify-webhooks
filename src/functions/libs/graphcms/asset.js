@@ -38,22 +38,23 @@ if (cdnUrl && cdnToken) {
   );
 }
 
-const uploadAssetStream = async (record) => {
+const uploadAssetStream = async (record, uploadUrl, uploadToken) => {
   const { foreignKey, name } = record;
+  const fileName = `/tmp/${name}`;
   const data = await dropboxLib.download(foreignKey);
-  await fs.promises.writeFile(name, data);
+  await fs.promises.writeFile(fileName, data);
   const form = new FormData();
-  form.append('fileUpload', fs.createReadStream(name));
+  form.append('fileUpload', fs.createReadStream(fileName));
   const res = axios({
     method: 'post',
-    url: `${cdnUrl}/upload`,
+    url: `${uploadUrl}/upload`,
     headers: {
-      Authorization: `Bearer ${cdnToken}`,
+      Authorization: `Bearer ${uploadToken}`,
       ...form.getHeaders(),
     },
     data: form,
   });
-  fs.promises.unlink(name);
+  fs.promises.unlink(fileName);
   return res;
 };
 
@@ -89,7 +90,7 @@ const uploadAsset = async (record) => {
         data: `url=${encodeURIComponent(externalUrl)}`,
       });
     } else {
-      res = await uploadAssetStream(record);
+      res = await uploadAssetStream(record, uploadUrl, uploadToken);
     }
     return res.data;
   }
@@ -97,7 +98,7 @@ const uploadAsset = async (record) => {
 };
 
 const updateAsset = async (asset, record) => {
-  const { coords } = record;
+  const { coords, folder } = record;
   const mutation = await graphcmsMutation.updateAsset();
 
   let mutationVariables = {
@@ -113,18 +114,20 @@ const updateAsset = async (asset, record) => {
       },
     };
   }
-  if (cdn) {
+  console.log([mutation, mutationVariables])
+  if (folder !== '/images' && cdn) {
     return cdn.request(mutation, mutationVariables);
   }
   return graphcms.request(mutation, mutationVariables);
 };
 
-const publishAsset = async (asset) => {
+const publishAsset = async (asset, record) => {
+  const { folder } = record;
   const mutation = await graphcmsMutation.publishAsset();
   const mutationVariables = {
     id: asset,
   };
-  if (cdn) {
+  if (folder !== '/images' && cdn) {
     return cdn.request(mutation, mutationVariables);
   }
   return graphcms.request(mutation, mutationVariables);
@@ -150,7 +153,7 @@ const updateTrack = async (asset, record, mutation, variable) => {
     const geometry = { type: 'Point', coordinates: [lon, lat] };
     tracks = await mongodb.trackByCoords(geometry);
   }
-  if (tracks.length > 0) {
+  if (tracks && tracks.length > 0) {
     const res = tracks.map((track) => {
       const { name } = track;
       const mutationVariables = {
@@ -187,6 +190,7 @@ module.exports = async (data) => {
   const { folder, extension, coords, sha1 } = record;
   const asset = await uploadAsset(record);
   const { id: assetId, url: assetUrl, handle } = asset;
+  console.log(assetId);
   if (assetId) {
     const { updateAsset: res } = await updateAsset(assetId, record);
     let mutation;
@@ -195,6 +199,9 @@ module.exports = async (data) => {
       if (coords) {
         await updateTrail(sha1, coords);
         mutation = await graphcmsMutation.upsertTrackConnectAssets('photos');
+        mutationVariables = {
+          id: assetId,
+        };
       }
     } else {
       let property;
@@ -223,14 +230,14 @@ module.exports = async (data) => {
       } else {
         mutation = await graphcmsMutation.upsertTrackConnectAsset(property);
         mutationVariables = {
-          id: asset,
+          id: assetId,
         };
       }
     }
     if (mutation) {
       await updateTrack(assetId, record, mutation, mutationVariables);
     }
-    await publishAsset(assetId);
+    await publishAsset(assetId, record);
     return res;
   }
 };
