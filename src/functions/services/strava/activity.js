@@ -60,7 +60,14 @@ const processActivity = async (event, foreignKey) => {
 
   const activityData = await stravaLib.api(`activities/${foreignKey}`);
   delete activityData['photos'];
-  const { name, start_date: startTime } = activityData;
+  const {
+    name,
+    start_date: startTime,
+    start_latitude: latitude,
+    start_longitude: longitude,
+  } = activityData;
+  const location = await coordinatesLib.location(latitude, longitude);
+  const { city, state, country } = location;
   const url = `activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`;
   const stream = await stravaLib.api(url);
   const points = stream.latlng.data.map((e, index) => [
@@ -79,6 +86,9 @@ const processActivity = async (event, foreignKey) => {
     foreignKey,
     status: 'synced',
     _id: activityId,
+    city,
+    state,
+    country,
   };
 
   if (type === 'create') {
