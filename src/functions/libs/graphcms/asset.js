@@ -114,7 +114,6 @@ const updateAsset = async (asset, record) => {
       },
     };
   }
-  console.log([mutation, mutationVariables])
   if (folder !== '/images' && cdn) {
     return cdn.request(mutation, mutationVariables);
   }
@@ -187,10 +186,16 @@ const updateTrail = async (sha1, coords) => {
 module.exports = async (data) => {
   const { _id: file } = data;
   const record = await File.findById(file);
-  const { folder, extension, coords, sha1 } = record;
+  const { name, path_display, folder, extension, coords, sha1 } = record;
   const asset = await uploadAsset(record);
   const { id: assetId, url: assetUrl, handle } = asset;
-  console.log(assetId);
+  let fileUrl;
+  if (assetUrl) {
+    fileUrl = assetUrl;
+  } else {
+    fileUrl = `https://media.graphcms.com/${handle}`;
+  }
+  await File.findByIdAndUpdate(file, { url: fileUrl, status: 'deployed' });
   if (assetId) {
     const { updateAsset: res } = await updateAsset(assetId, record);
     let mutation;
@@ -217,15 +222,9 @@ module.exports = async (data) => {
         property = 'gpxFileSmall';
       }
       if (cdn) {
-        let value;
-        if (assetUrl) {
-          value = assetUrl;
-        } else {
-          value = `https://media.graphcms.com/${handle}`;
-        }
         mutation = await graphcmsMutation.updateTrack(`${property}Url`);
         mutationVariables = {
-          value,
+          value: fileUrl,
         };
       } else {
         mutation = await graphcmsMutation.upsertTrackConnectAsset(property);
@@ -238,6 +237,11 @@ module.exports = async (data) => {
       await updateTrack(assetId, record, mutation, mutationVariables);
     }
     await publishAsset(assetId, record);
-    return res;
+    return {
+      ...res,
+      name,
+      path_display,
+      url: fileUrl,
+    };
   }
 };

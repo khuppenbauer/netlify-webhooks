@@ -8,8 +8,6 @@ const files = require('../../methods/files');
 const messages = require('../../methods/messages');
 const Track = require('../../models/track');
 
-const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
-
 const saveGeoJson = async (name, geoJson, event) => {
   const filePath = `/tracks/${name}.json`;
   const source = {
@@ -78,9 +76,8 @@ const getMetaData = async (geoJson) => {
 
 module.exports = async (event, message) => {
   const data = JSON.parse(event.body);
-  const { path_display: pathDisplay } = data;
+  const { path_display: pathDisplay, url } = data;
   const { name } = path.parse(pathDisplay);
-  const url = `${cdnUrl}${pathDisplay}`;
   const geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data, 'track');
   const metaData = await getMetaData(geoJson);
   const geoJsonFile = await saveGeoJson(name, geoJson, event);
@@ -91,6 +88,7 @@ module.exports = async (event, message) => {
   const track = {
     name,
     gpxFile: pathDisplay,
+    gpxFileUrl: url,
     _id: trackId,
     ...metaData,
     geoJsonFile,
@@ -106,7 +104,6 @@ module.exports = async (event, message) => {
       name,
       gpxFile: pathDisplay,
       track: trackId,
-      origin: cdnUrl,
       url,
     }),
   };

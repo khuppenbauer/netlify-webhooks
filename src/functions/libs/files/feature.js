@@ -1,8 +1,6 @@
 const dotenv = require('dotenv').config();
 const featureService = require('../../services/feature');
 
-const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
-
 module.exports = async (event, file, coordinate) => {
   const {
     name,
@@ -12,12 +10,13 @@ module.exports = async (event, file, coordinate) => {
     imageHeight,
     size,
     sha1,
+    url,
   } = file;
   const feature = {
     type: 'Feature',
     properties: {
       name,
-      url: `${cdnUrl}${pathDisplay}`,
+      url,
       pathDisplay,
       dateTimeOriginal,
       imageWidth,

@@ -82,13 +82,25 @@ const schema = new mongoose.Schema({
   gpxFile: {
     type: String,
   },
+  gpxFileUrl: {
+    type: String,
+  },
   gpxFileSmall: {
+    type: String,
+  },
+  gpxFileSmallUrl: {
     type: String,
   },
   staticImage: {
     type: String,
   },
+  staticImageUrl: {
+    type: String,
+  },
   geoJsonFile: {
+    type: String,
+  },
+  geoJsonFileUrl: {
     type: String,
   },
   geoJson: {

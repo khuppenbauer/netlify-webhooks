@@ -1,6 +1,7 @@
 const sentry = require('./libs/sentry');
 const messages = require('./methods/messages');
 const graphcms = require('./libs/graphcms');
+const Track = require('./models/track');
 
 const handler = async (event) => {
   if (event.httpMethod === 'POST') {
@@ -12,8 +13,26 @@ const handler = async (event) => {
       message = 'add_track';
       res = await graphcms.track(data);
     } else if (type === 'file') {
-      message = 'add_file';
       res = await graphcms.asset(data);
+      const { folder, extension, source, url } = res;
+      const dir = folder.replace('/', '');
+      const { foreignKey } = source;
+      const filter = { name: foreignKey };
+      let update;
+      if (folder === '/preview') {
+        update = { staticImageUrl: url };
+      } else if (folder === '/tracks') {
+        if (extension === 'gpx') {
+          update = { gpxFileUrl: url };
+        } else if (extension === 'json') {
+          update = { geoJsonFileUrl: url };
+        }
+      } else if (folder === '/convert/gpx') {
+        update = { gpxFileSmallUrl: url };
+      }
+      console.log([filter, update]);
+      await Track.findOneAndUpdate(filter, update);
+      message = `upload_${dir}_${extension}_file`;
     } else if (type === 'segment') {
       message = 'add_segment';
       res = await graphcms.trail(data);

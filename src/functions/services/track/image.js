@@ -9,7 +9,6 @@ const Track = require('../../models/track');
 const File = require('../../models/file');
 
 const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
-const cdnUrl = process.env.NETLIFY_CDN_URL;
 const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
 const mapboxBaseUrl = 'https://api.mapbox.com/styles/v1/';
 const mapboxStyle = 'mapbox/satellite-streets-v11';
@@ -22,9 +21,10 @@ const getGeoJson = async (gpxFile) => {
   const count = 100;
 
   const params = [
-    `infile=${cdnUrl}${gpxFile}`,
+    `infile=${gpxFile}`,
     `outtype=${outtype}`,
     `count=${count}`,
+    'intype=gpx',
   ];
   const query = params.join('&');
   const url = `${gpsbabelBaseUrl}gpsbabel?${query}`;
@@ -70,8 +70,8 @@ const createImage = async (geoJson) => {
 
 module.exports = async (event, message) => {
   const body = JSON.parse(event.body);
-  const { gpxFile, name, track } = body;
-  const geoJson = await getGeoJson(gpxFile);
+  const { name, track, url } = body;
+  const geoJson = await getGeoJson(url);
   const data = await createImage(geoJson);
   const { name: fileName } = path.parse(name);
   const { ext: extension } = await fileType.fromBuffer(data);
