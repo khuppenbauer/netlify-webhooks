@@ -17,6 +17,7 @@ const LogsShow = (props) => (
       <TextField source="action" />
       <JsonView source="body" />
       <JsonView source="data" />
+      <JsonView source="headers" />
       <NumberField source="responseTime" />
       <DateField source="createdAt" showTime />
       <DateField source="updatedAt" showTime />

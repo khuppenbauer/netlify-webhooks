@@ -1,10 +1,12 @@
 const dotenv = require('dotenv').config();
 const axios = require('axios');
+const request = require('../../services/request');
 
 const dropboxUploadUrl = 'https://content.dropboxapi.com/2/files/upload';
 const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 module.exports = async (data, path) => {
+  const startTime = new Date().getTime();
   const args = {
     path,
     mode: 'add',
@@ -22,5 +24,6 @@ module.exports = async (data, path) => {
     },
     data,
   });
+  await request.log(res, startTime);
   return res.data;
 };

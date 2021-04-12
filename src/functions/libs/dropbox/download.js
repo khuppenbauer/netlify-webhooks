@@ -1,10 +1,12 @@
 const dotenv = require('dotenv').config();
 const axios = require('axios');
+const request = require('../../services/request');
 
 const dropboxDownloadUrl = 'https://content.dropboxapi.com/2/files/download';
 const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 module.exports = async (id) => {
+  const startTime = new Date().getTime();
   const args = {
     path: id,
   };
@@ -17,8 +19,9 @@ module.exports = async (id) => {
       'Dropbox-API-Arg': JSON.stringify(args),
     },
   });
-  if (typeof res.data === 'object') {
-    return JSON.stringify(res.data);
+  const { data } = res;
+  if (typeof data === 'object') {
+    return JSON.stringify(data);
   }
-  return res.data;
+  return data;
 };

@@ -6,6 +6,7 @@ const File = require('../../models/file');
 const Message = require('../../models/message');
 const messages = require('../../methods/messages');
 const filesLib = require('../../libs/files');
+const request = require('../request');
 
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
 const netlifyDeployEndpoint = `sites/${process.env.NETLIFY_CDN_ID}/deploys`
@@ -63,6 +64,7 @@ const createDeployment = async (event, deployMessage, uploadMessage) => {
   const body = {
     files: filesData,
   };
+  const startTime = new Date().getTime();
   const res = await axios({
     method: 'post',
     url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
@@ -72,7 +74,9 @@ const createDeployment = async (event, deployMessage, uploadMessage) => {
     },
     data: JSON.stringify(body),
   });
-  const { id, required } = res.data;
+  const { data } = res;
+  await request.log(res, startTime);
+  const { id, required } = data;
   if (required.length > 0) {
     await createUploadMessage(event, deployMessage, id, required);
   } else {

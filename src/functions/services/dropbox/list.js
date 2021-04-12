@@ -4,11 +4,13 @@ const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Token = require('../../models/token');
 const messages = require('../../methods/messages');
+const request = require('../request');
 
 const dropboxRpcEndpoint = 'https://api.dropboxapi.com/';
 const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 const executeDropboxApi = async (url, body) => {
+  const startTime = new Date().getTime();
   const res = await axios({
     method: 'post',
     url,
@@ -18,6 +20,7 @@ const executeDropboxApi = async (url, body) => {
     },
     data: JSON.stringify(body),
   });
+  await request.log(res, startTime);
   return res.data;
 };
 

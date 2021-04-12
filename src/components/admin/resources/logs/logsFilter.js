@@ -38,6 +38,7 @@ const LogsFilter = (props) => {
         host: facet('host'),
         path: facet('path'),
         action: facet('action'),
+        status: facet('status'),
       },
     },
   ];
@@ -54,7 +55,9 @@ const LogsFilter = (props) => {
   if (data === undefined || data.length === 0) {
     return [];
   }
-  const { host, path, action } = data[0];
+  const {
+    host, path, action, status,
+  } = data[0];
   return (
     <Filter {...props}>
       <SelectInput
@@ -71,6 +74,11 @@ const LogsFilter = (props) => {
         source="action"
         key="action-filter"
         choices={action.map((actionItem) => ({ id: actionItem.value, name: `${actionItem.value} (${actionItem.count})` }))}
+      />
+      <SelectInput
+        source="status"
+        key="status-filter"
+        choices={status.map((statusItem) => ({ id: statusItem.value, name: `${statusItem.value} (${statusItem.count})` }))}
       />
     </Filter>
   );

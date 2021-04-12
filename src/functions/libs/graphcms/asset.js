@@ -11,6 +11,7 @@ const mongodb = require('../mongodb');
 const dropboxLib = require('../dropbox');
 const graphcmsMutation = require('./mutation');
 const graphcmsQuery = require('./query');
+const request = require('../../services/request');
 
 const url = process.env.GRAPHCMS_API_URL;
 const token = process.env.GRAPHCMS_API_TOKEN;
@@ -45,7 +46,8 @@ const uploadAssetStream = async (record, uploadUrl, uploadToken) => {
   await fs.promises.writeFile(fileName, data);
   const form = new FormData();
   form.append('fileUpload', fs.createReadStream(fileName));
-  const res = axios({
+  const startTime = new Date().getTime();
+  const res = await axios({
     method: 'post',
     url: `${uploadUrl}/upload`,
     headers: {
@@ -54,6 +56,7 @@ const uploadAssetStream = async (record, uploadUrl, uploadToken) => {
     },
     data: form,
   });
+  await request.log(res, startTime);
   fs.promises.unlink(fileName);
   return res;
 };
@@ -80,6 +83,7 @@ const uploadAsset = async (record) => {
   const { asset: assetObj } = queryRes;
   if (!assetObj) {
     if (externalUrl) {
+      const startTime = new Date().getTime();
       res = await axios({
         method: 'post',
         url: `${uploadUrl}/upload`,
@@ -89,6 +93,7 @@ const uploadAsset = async (record) => {
         },
         data: `url=${encodeURIComponent(externalUrl)}`,
       });
+      await request.log(res, startTime);
     } else {
       res = await uploadAssetStream(record, uploadUrl, uploadToken);
     }

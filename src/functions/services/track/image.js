@@ -7,6 +7,7 @@ const messages = require('../../methods/messages');
 const files = require('../../methods/files');
 const Track = require('../../models/track');
 const File = require('../../models/file');
+const request = require('../request');
 
 const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
 const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
@@ -28,6 +29,7 @@ const getGeoJson = async (gpxFile) => {
   ];
   const query = params.join('&');
   const url = `${gpsbabelBaseUrl}gpsbabel?${query}`;
+  const startTime = new Date().getTime();
   const res = await axios({
     method: 'get',
     url,
@@ -35,6 +37,7 @@ const getGeoJson = async (gpxFile) => {
       'Content-Type': 'application/json',
     },
   });
+  await request.log(res, startTime);
   if (res.status !== 200) {
     return {};
   }

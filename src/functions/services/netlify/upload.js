@@ -3,13 +3,15 @@ const axios = require('axios');
 const File = require('../../models/file');
 const filesLib = require('../../libs/files');
 const dropboxLib = require('../../libs/dropbox');
+const request = require('../request');
 
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
 const token = process.env.NETLIFY_ACCESS_TOKEN;
 
 const uploadFiles = async (id, sha1, path_display, data) => {
   const netlifyFileUploadEndpoint = `deploys/${id}/files/${path_display}`;
-  return axios({
+  const startTime = new Date().getTime();
+  const res = await axios({
     method: 'put',
     url: `${netlifyBaseUrl}${netlifyFileUploadEndpoint}`,
     headers: {
@@ -18,6 +20,8 @@ const uploadFiles = async (id, sha1, path_display, data) => {
     },
     data,
   });
+  await request.log(res, startTime);
+  return res;
 };
 
 module.exports = async (event, message) => {

@@ -57,6 +57,7 @@ const TabbedDataGrid = ({
             <TextField source="host"/>
             <TextField source="path"/>
             <TextField source="action"/>
+            <NumberField source="status" />
             <NumberField source="responseTime" />
             <DateField source="createdAt" showTime/>
           </Datagrid>

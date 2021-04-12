@@ -30,7 +30,6 @@ const handler = async (event) => {
       } else if (folder === '/convert/gpx') {
         update = { gpxFileSmallUrl: url };
       }
-      console.log([filter, update]);
       await Track.findOneAndUpdate(filter, update);
       message = `upload_${dir}_${extension}_file`;
     } else if (type === 'segment') {

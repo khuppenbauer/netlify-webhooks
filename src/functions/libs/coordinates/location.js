@@ -3,12 +3,14 @@ const axios = require('axios');
 const mongoose = require('mongoose');
 const db = require('../../database/mongodb');
 const Location = require('../../models/location');
+const request = require('../../services/request');
 
 const locationServiceBaseUrl = 'https://eu1.locationiq.com/v1/';
 const locationServiceAccessToken = process.env.LOCATION_SERVICE_ACCESS_TOKEN;
 
 const getLocation = async (lat, lon) => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
+  const startTime = new Date().getTime();
   const params = {
     key: locationServiceAccessToken,
     lat,
@@ -22,6 +24,7 @@ const getLocation = async (lat, lon) => {
     method: 'get',
     url: `${locationServiceBaseUrl}reverse.php?${queryString}`,
   });
+  await request.log(res, startTime);
   return res.data;
 };
 

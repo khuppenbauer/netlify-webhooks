@@ -3,6 +3,7 @@ const axios = require('axios');
 const File = require('../../models/file');
 const filesLib = require('../../libs/files');
 const netlifyUpload = require('./upload');
+const request = require('../request');
 
 const cdnUrl = process.env.REACT_APP_FILE_BASE_URL;
 const netlifyBaseUrl = 'https://api.netlify.com/api/v1/';
@@ -59,6 +60,7 @@ const syncFiles = async (event, uploadMessage) => {
     files: filesData,
   };
 
+  const startTime = new Date().getTime();
   const res = await axios({
     method: 'post',
     url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
@@ -68,7 +70,9 @@ const syncFiles = async (event, uploadMessage) => {
     },
     data: JSON.stringify(body),
   });
-  const { id, required } = res.data;
+  const { data } = res;
+  await request.log(res, startTime);
+  const { id, required } = data;
   if (required.length > 0) {
     await upload(event, uploadMessage, id, required);
   }

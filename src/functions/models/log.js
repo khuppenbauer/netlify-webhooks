@@ -28,6 +28,9 @@ const schema = new mongoose.Schema({
   data: {
     type: Object,
   },
+  headers: {
+    type: Object,
+  },
   responseTime: {
     type: Number,
   },

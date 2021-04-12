@@ -1,5 +1,6 @@
 const dotenv = require('dotenv').config();
 const axios = require('axios');
+const request = require('../../services/request');
 
 const stravaOAuthUrl = 'https://www.strava.com/oauth/token';
 const stravaBaseUrl = 'https://www.strava.com/api/v3/';
@@ -27,7 +28,9 @@ const getData = async (url) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 
+  const startTime = new Date().getTime();
   const res = await instance.get(url);
+  await request.log(res, startTime);
   if (res.status !== 200) {
     return {};
   }

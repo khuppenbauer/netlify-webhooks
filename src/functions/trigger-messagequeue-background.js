@@ -4,7 +4,7 @@ const db = require('./database/mongodb');
 const Subscription = require('./models/subscription');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
-const logs = require('./methods/logs');
+const request = require('./services/request');
 const sentry = require('./libs/sentry');
 
 const executeSubscriptions = async (event, subscription, data) => {
@@ -17,22 +17,8 @@ const executeSubscriptions = async (event, subscription, data) => {
     }
     const startTime = new Date().getTime();
     const { url } = subscription;
-    const urlObject = new URL(url);
     const res = await axios.post(url, JSON.stringify(body));
-    const logObject = {
-      path: urlObject.pathname,
-      queryStringParameters: {
-        action: new URLSearchParams(urlObject.search).get('action'),
-      },
-      headers: {
-        host: urlObject.host,
-      },
-    };
-    const logData = {
-      startTime,
-      status: res.status,
-    };
-    await logs.create(logObject, logData);
+    await request.log(res, startTime);
     status = 'success';
     message.push({
       subscription,

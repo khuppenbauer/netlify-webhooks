@@ -4,6 +4,7 @@ const sentry = require('./libs/sentry');
 const Activity = require('./models/activity');
 const Message = require('./models/message');
 const messages = require('./methods/messages');
+const logs = require('./methods/logs');
 
 const importMessage = 'import_activity';
 const createMessage = 'create_activity';
@@ -38,6 +39,7 @@ const handler = async (event) => {
     }
   }
   if (event.httpMethod === 'POST') {
+    const startTime = new Date().getTime();
     const message = await Message.findOne({ event: importMessage });
     if (!message) {
       return {
@@ -55,6 +57,7 @@ const handler = async (event) => {
     };
     await messages.create(messageObject, { foreignKey, app, event: createMessage });
     await Message.findByIdAndDelete(_id);
+    await logs.create(event, { startTime, status: 200 });
     return {
       statusCode: 200,
       body: 'Ok',

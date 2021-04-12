@@ -13,15 +13,17 @@ module.exports = async (event, data) => {
   const {
     startTime,
     status,
+    requestHeaders,
   } = data;
   const log = {
     _id: mongoose.Types.ObjectId(),
     status,
-    url: `https://${host}/${path}`,
+    url: `https://${host}${path}`,
     host,
     path,
     action,
     responseTime: new Date().getTime() - startTime,
+    headers: requestHeaders,
   };
 
   try {
