@@ -17,6 +17,7 @@ const url = process.env.GRAPHCMS_API_URL;
 const token = process.env.GRAPHCMS_API_TOKEN;
 const cdnUrl = process.env.GRAPHCMS_CDN_URL;
 const cdnToken = process.env.GRAPHCMS_CDN_TOKEN;
+const hasTrails = false;
 
 const graphcms = new GraphQLClient(
   url,
@@ -207,7 +208,9 @@ module.exports = async (data) => {
     let mutationVariables;
     if (folder === '/images') {
       if (coords) {
-        await updateTrail(sha1, coords);
+        if (hasTrails) {
+          await updateTrail(sha1, coords);
+        }
         mutation = await graphcmsMutation.upsertTrackConnectAssets('photos');
         mutationVariables = {
           id: assetId,
