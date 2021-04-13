@@ -41,9 +41,10 @@ if (cdnUrl && cdnToken) {
 }
 
 const uploadAssetStream = async (record, uploadUrl, uploadToken) => {
-  const { foreignKey, name } = record;
+  const { foreignKey, name, mimeType } = record;
   const fileName = `/tmp/${name}`;
-  const data = await dropboxLib.download(foreignKey);
+  const type = mimeType.startsWith('image') ? 'binary' : 'text';
+  const data = await dropboxLib.download(foreignKey, type);
   await fs.promises.writeFile(fileName, data);
   const form = new FormData();
   form.append('fileUpload', fs.createReadStream(fileName));
@@ -192,7 +193,15 @@ const updateTrail = async (sha1, coords) => {
 module.exports = async (data) => {
   const { _id: file } = data;
   const record = await File.findById(file);
-  const { name, path_display, folder, extension, coords, sha1 } = record;
+  const {
+    name,
+    path_display,
+    folder,
+    extension,
+    coords,
+    sha1,
+    source,
+  } = record;
   const asset = await uploadAsset(record);
   const { id: assetId, url: assetUrl, handle } = asset;
   let fileUrl;
@@ -250,6 +259,9 @@ module.exports = async (data) => {
       name,
       path_display,
       url: fileUrl,
+      folder,
+      extension,
+      source,
     };
   }
 };

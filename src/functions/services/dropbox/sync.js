@@ -6,6 +6,8 @@ const dropboxLib = require('../../libs/dropbox');
 const filesLib = require('../../libs/files');
 const files = require('../../methods/files');
 
+const createExternalUrl = false;
+
 const saveFile = async (event, message, data) => {
   const { id, name, path_display } = data;
 
@@ -20,8 +22,12 @@ const saveFile = async (event, message, data) => {
   let externalUrl;
 
   if (isImage) {
-    externalUrl = await dropboxLib.link(id);
-    fileData = await filesLib.data(externalUrl, 'binary');
+    if (createExternalUrl) {
+      externalUrl = await dropboxLib.link(id);
+      fileData = await filesLib.data(externalUrl, 'binary');
+    } else {
+      fileData = await dropboxLib.download(id, 'binary');
+    }
     const exif = await exifr.parse(fileData);
     if (exif) {
       const {
