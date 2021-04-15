@@ -6,6 +6,7 @@ const dropboxUploadUrl = 'https://content.dropboxapi.com/2/files/upload';
 const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 module.exports = async (data, path) => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const startTime = new Date().getTime();
   const args = {
     path,
