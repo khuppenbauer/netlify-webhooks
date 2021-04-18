@@ -61,17 +61,23 @@ const syncFiles = async (event, uploadMessage) => {
   };
 
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'post',
-    url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify(body),
-  });
+  let res;
+  try {
+    res = await axios({
+      method: 'post',
+      url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      data: JSON.stringify(body),
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   const { data } = res;
-  await request.log(res, startTime);
   const { id, required } = data;
   if (required.length > 0) {
     await upload(event, uploadMessage, id, required);

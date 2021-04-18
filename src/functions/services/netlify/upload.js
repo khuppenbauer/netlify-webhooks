@@ -11,16 +11,22 @@ const token = process.env.NETLIFY_ACCESS_TOKEN;
 const uploadFiles = async (id, sha1, path_display, data) => {
   const netlifyFileUploadEndpoint = `deploys/${id}/files/${path_display}`;
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'put',
-    url: `${netlifyBaseUrl}${netlifyFileUploadEndpoint}`,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/octet-stream',
-    },
-    data,
-  });
-  await request.log(res, startTime);
+  let res;
+  try {
+    res = await axios({
+      method: 'put',
+      url: `${netlifyBaseUrl}${netlifyFileUploadEndpoint}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/octet-stream',
+      },
+      data,
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   return res;
 };
 

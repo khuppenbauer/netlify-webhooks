@@ -20,11 +20,18 @@ const getLocation = async (lat, lon) => {
     normalizecity: 1,
   };
   const queryString = Object.keys(params).map((key) => (key) + '=' + params[key]).join('&');
-  const res = await axios({
-    method: 'get',
-    url: `${locationServiceBaseUrl}reverse.php?${queryString}`,
-  });
-  await request.log(res, startTime);
+
+  let res;
+  try {
+    res = await axios({
+      method: 'get',
+      url: `${locationServiceBaseUrl}reverse.php?${queryString}`,
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   return res.data;
 };
 

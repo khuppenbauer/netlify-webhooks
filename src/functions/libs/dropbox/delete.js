@@ -10,15 +10,21 @@ module.exports = async (path) => {
   const args = {
     path,
   };
-  const res = await axios({
-    method: 'post',
-    url: dropboxDeleteUrl,
-    headers: {
-      Authorization: `Bearer ${dropboxAccessToken}`,
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify(args),
-  });
-  await request.log(res, startTime);
+  let res;
+  try {
+    res = await axios({
+      method: 'post',
+      url: dropboxDeleteUrl,
+      headers: {
+        Authorization: `Bearer ${dropboxAccessToken}`,
+        'Content-Type': 'application/json',
+      },
+      data: JSON.stringify(args),
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   return res.data;
 };

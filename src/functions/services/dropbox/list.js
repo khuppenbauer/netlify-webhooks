@@ -11,16 +11,22 @@ const dropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 const executeDropboxApi = async (url, body) => {
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'post',
-    url,
-    headers: {
-      Authorization: `Bearer ${dropboxAccessToken}`,
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify(body),
-  });
-  await request.log(res, startTime);
+  let res;
+  try {
+    res = await axios({
+      method: 'post',
+      url,
+      headers: {
+        Authorization: `Bearer ${dropboxAccessToken}`,
+        'Content-Type': 'application/json',
+      },
+      data: JSON.stringify(body),
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   return res.data;
 };
 

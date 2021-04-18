@@ -10,12 +10,12 @@ const sentry = require('./libs/sentry');
 const executeSubscriptions = async (event, subscription, data) => {
   let status;
   const message = data.message !== undefined ? data.message : [];
+  const startTime = new Date().getTime();
   try {
     const body = {
       ...data.body,
       message: data._id,
-    }
-    const startTime = new Date().getTime();
+    };
     const { url } = subscription;
     const res = await axios.post(url, JSON.stringify(body));
     await request.log(res, startTime);
@@ -25,14 +25,15 @@ const executeSubscriptions = async (event, subscription, data) => {
       status: res.status,
       res: res.data,
     });
-  } catch (err) {
+  } catch (error) {
     status = 'error';
     const messageObject = {
       ...event,
-      body: JSON.stringify({ status, statusText: err.message }),
+      body: JSON.stringify({ status, statusText: error.message }),
     };
+    await request.log(error.response, startTime);
     await messages.update(messageObject, data._id);
-    throw err;
+    throw error;
   }
   const messageObject = {
     ...event,

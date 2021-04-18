@@ -65,18 +65,23 @@ const createDeployment = async (event, deployMessage, uploadMessage) => {
     files: filesData,
   };
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'post',
-    url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    data: JSON.stringify(body),
-  });
-  const { data } = res;
-  await request.log(res, startTime);
-  const { id, required } = data;
+  let res;
+  try {
+    res = await axios({
+      method: 'post',
+      url: `${netlifyBaseUrl}${netlifyDeployEndpoint}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      data: JSON.stringify(body),
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
+  const { id, required } = res.data;
   if (required.length > 0) {
     await createUploadMessage(event, deployMessage, id, required);
   } else {

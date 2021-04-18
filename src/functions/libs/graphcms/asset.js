@@ -49,16 +49,22 @@ const uploadAssetStream = async (record, uploadUrl, uploadToken) => {
   const form = new FormData();
   form.append('fileUpload', fs.createReadStream(fileName));
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'post',
-    url: `${uploadUrl}/upload`,
-    headers: {
-      Authorization: `Bearer ${uploadToken}`,
-      ...form.getHeaders(),
-    },
-    data: form,
-  });
-  await request.log(res, startTime);
+  let res;
+  try {
+    res = await axios({
+      method: 'post',
+      url: `${uploadUrl}/upload`,
+      headers: {
+        Authorization: `Bearer ${uploadToken}`,
+        ...form.getHeaders(),
+      },
+      data: form,
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   fs.promises.unlink(fileName);
   return res;
 };
@@ -86,16 +92,21 @@ const uploadAsset = async (record) => {
   if (!assetObj) {
     if (externalUrl) {
       const startTime = new Date().getTime();
-      res = await axios({
-        method: 'post',
-        url: `${uploadUrl}/upload`,
-        headers: {
-          Authorization: `Bearer ${uploadToken}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        data: `url=${encodeURIComponent(externalUrl)}`,
-      });
-      await request.log(res, startTime);
+      try {
+        res = await axios({
+          method: 'post',
+          url: `${uploadUrl}/upload`,
+          headers: {
+            Authorization: `Bearer ${uploadToken}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          data: `url=${encodeURIComponent(externalUrl)}`,
+        });
+        await request.log(res, startTime);
+      } catch (error) {
+        await request.log(error.response, startTime);
+        throw error;
+      }
     } else {
       res = await uploadAssetStream(record, uploadUrl, uploadToken);
     }

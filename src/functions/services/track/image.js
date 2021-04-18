@@ -30,14 +30,20 @@ const getGeoJson = async (gpxFile) => {
   const query = params.join('&');
   const url = `${gpsbabelBaseUrl}gpsbabel?${query}`;
   const startTime = new Date().getTime();
-  const res = await axios({
-    method: 'get',
-    url,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  await request.log(res, startTime);
+  let res;
+  try {
+    res = await axios({
+      method: 'get',
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    await request.log(res, startTime);
+  } catch (error) {
+    await request.log(error.response, startTime);
+    throw error;
+  }
   if (res.status !== 200) {
     return {};
   }
