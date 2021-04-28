@@ -1,6 +1,7 @@
 const features = require('./methods/features');
+const sentry = require('./libs/sentry');
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   const path = event.path.replace(/(\.netlify\/functions\/)?[^/]+/, '');
   const segments = path.split('/').filter((e) => e);
   const { type } = event.queryStringParameters;
@@ -56,3 +57,7 @@ exports.handler = async (event) => {
       };
   }
 };
+
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});

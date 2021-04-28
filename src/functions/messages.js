@@ -1,6 +1,7 @@
 const messages = require('./methods/messages');
+const sentry = require('./libs/sentry');
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   const path = event.path.replace(/(\.netlify\/functions\/)?[^/]+/, '');
   const segments = path.split('/').filter((e) => e);
   switch (event.httpMethod) {
@@ -49,3 +50,7 @@ exports.handler = async (event) => {
       };
   }
 };
+
+exports.handler = sentry.wrapHandler(handler, {
+  captureTimeoutWarning: false,
+});
