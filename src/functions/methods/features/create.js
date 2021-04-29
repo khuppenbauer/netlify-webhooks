@@ -23,20 +23,18 @@ module.exports = async (event, data) => {
   };
   try {
     await Feature.create(feature);
-    if (type === 'segment') {
-      const messageObject = {
-        ...event,
-        body: JSON.stringify({ feature: id }),
-      };
-      const messageData = {
-        foreignKey,
-        app: 'messageQueue',
-        event: `create_${source}_${type}_feature`,
-      };
-      const existingMessage = await Message.find(messageData);
-      if (existingMessage.length === 0) {
-        await messages.create(messageObject, messageData);
-      }
+    const messageObject = {
+      ...event,
+      body: JSON.stringify({ feature: id }),
+    };
+    const messageData = {
+      foreignKey,
+      app: 'messageQueue',
+      event: `create_${source}_${type}_feature`,
+    };
+    const existingMessage = await Message.find(messageData);
+    if (existingMessage.length === 0) {
+      await messages.create(messageObject, messageData);
     }
   } catch (err) {
     return {
