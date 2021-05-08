@@ -23,8 +23,13 @@ module.exports = async (data) => {
     geoJson,
   } = record;
   const { geometry } = geoJson.features[0];
-  const { coordinates } = geometry;
-  const geoLoc = coordinates.map((coordinate) => ({ lat: coordinate[1], lng: coordinate[0] }));
+  const { coordinates, type: geoJsonType } = geometry;
+  let geoLoc = {};
+  if (geoJsonType === 'Point') {
+    geoLoc = { lat: coordinates[1], lng: coordinates[0] };
+  } else {
+    geoLoc = coordinates.map((coordinate) => ({ lat: coordinate[1], lng: coordinate[0] }));
+  }
   const client = algoliasearch(applicationID, adminAPIKey);
   const index = client.initIndex(indexName);
   const objects = [
