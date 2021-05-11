@@ -32,8 +32,8 @@ module.exports = async (data) => {
   }
   const client = algoliasearch(applicationID, adminAPIKey);
   const index = client.initIndex(indexName);
-  const objects = [
-    {
+  await index
+    .saveObject({
       objectID: feature,
       name,
       type,
@@ -44,12 +44,9 @@ module.exports = async (data) => {
       country,
       meta,
       _geoloc: geoLoc,
-    },
-  ];
-  index
-    .saveObjects(objects)
-    .then(({ objectIDs }) => {
-      console.log(objectIDs);
+    })
+    .then(({ objectID }) => {
+      console.log(objectID);
     })
     .catch((err) => {
       console.log(err);
