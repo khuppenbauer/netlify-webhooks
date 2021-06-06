@@ -32,6 +32,14 @@ if (cdnUrl && cdnToken) {
   );
 }
 
+const publishTrack = async (name) => {
+  const mutation = await graphcmsMutation.publishTrack();
+  const mutationVariables = {
+    name,
+  };
+  return graphcms.request(mutation, mutationVariables);
+};
+
 module.exports = async (data) => {
   const { track } = data;
   const record = await Track.findById(track);
@@ -97,5 +105,7 @@ module.exports = async (data) => {
     geoJsonFileUrl,
     staticImageUrl,
   };
-  return graphcms.request(mutation, mutationVariables);
+  const result = await graphcms.request(mutation, mutationVariables);
+  await publishTrack(name);
+  return result;
 };
