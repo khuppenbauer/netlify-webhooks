@@ -5,6 +5,7 @@ const exifr = require('exifr');
 const dropboxLib = require('../../libs/dropbox');
 const filesLib = require('../../libs/files');
 const files = require('../../methods/files');
+const File = require('../../models/file');
 
 const createExternalUrl = false;
 
@@ -62,8 +63,8 @@ const saveFile = async (event, message, data) => {
     .update(fileData)
     .digest('hex');
 
-  const { dir: folder } = path.parse(path_display);
-  const metaData = {
+  const { dir: folder, name: fileName } = path.parse(path_display);
+  let metaData = {
     ...data,
     foreignKey: id,
     mimeType,
@@ -74,6 +75,18 @@ const saveFile = async (event, message, data) => {
     ...imageData,
     status: 'sync',
   };
+  const existing = await File.find({ path_display });
+  if (existing.length === 0) {
+    metaData = {
+      ...metaData,
+      source: {
+        name: 'dropbox',
+        foreignKey: fileName,
+        type: extension,
+      },
+    };
+  }
+
   await files.create(event, metaData, message);
   if (coordinate) {
     await filesLib.feature(event, metaData, coordinate);
