@@ -86,7 +86,7 @@ module.exports = async (event, message) => {
   const { ext: extension } = await fileType.fromBuffer(data);
   const filePath = `/preview/${fileName}.${extension}`;
   const source = {
-    name: 'mapbpx',
+    name: 'mapbox',
     foreignKey: name,
     type: 'staticImage',
   };
