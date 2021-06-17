@@ -41,10 +41,16 @@ const getMetaData = async (geoJson) => {
   const endLocation = await coordinatesLib.location(end[1], end[0]);
   const { city: startCity, state: startState, country: startCountry } = startLocation;
   const { city: endCity, state: endState, country: endCountry } = endLocation;
+  let dateTime = {};
+  if (time && coordTimes) {
+    dateTime = {
+      date: time,
+      startTime: coordTimes[0],
+      endTime: coordTimes[coordTimes.length - 1],
+    };
+  }
   return {
-    date: time,
-    startTime: coordTimes[0],
-    endTime: coordTimes[coordTimes.length - 1],
+    ...dateTime,
     distance,
     ...elevation,
     minCoords: {
