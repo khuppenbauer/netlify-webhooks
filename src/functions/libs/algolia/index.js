@@ -1,5 +1,7 @@
-const Add = require('./add');
+const Feature = require('./feature');
+const Track = require('./track');
 
 module.exports = {
-  add: Add,
+  feature: Feature,
+  track: Track,
 };
