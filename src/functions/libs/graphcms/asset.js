@@ -116,11 +116,12 @@ const uploadAsset = async (record) => {
 };
 
 const updateAsset = async (asset, record) => {
-  const { coords, folder } = record;
+  const { coords, folder, name } = record;
   const mutation = await graphcmsMutation.updateAsset();
 
   let mutationVariables = {
     ...record._doc,
+    fileName: name,
     id: asset,
   };
   if (coords) {

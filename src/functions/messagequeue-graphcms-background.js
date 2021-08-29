@@ -35,6 +35,9 @@ const handler = async (event) => {
     } else if (type === 'segment') {
       message = 'add_segment';
       res = await graphcms.trail(data);
+    } else if (type === 'collection') {
+      message = 'update_collection';
+      res = await graphcms.collection(data);
     }
     if (res) {
       const messageObject = {

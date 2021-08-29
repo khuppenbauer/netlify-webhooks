@@ -12,6 +12,7 @@ module.exports = async () => {
       $foreignKey: String,
       $sha1: String,
       $location: LocationInput,
+      $fileName: String,
     ) {
       updateAsset(
         where: { id: $id }
@@ -24,6 +25,7 @@ module.exports = async () => {
           foreignKey: $foreignKey,
           sha1: $sha1,
           location: $location,
+          fileName: $fileName,
         }
       ) {
         id  
@@ -37,7 +39,8 @@ module.exports = async () => {
         location {
           latitude
           longitude
-        }  
+        }
+        fileName
       }
     }  
   `;
