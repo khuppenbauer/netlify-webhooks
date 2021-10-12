@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 const path = require('path');
 const axios = require('axios');
+const dayjs = require('dayjs');
 const db = require('../../database/mongodb');
 const dropbox = require('../dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 const files = require('../../methods/files');
 const messages = require('../../methods/messages');
+const tasks = require('../../methods/tasks');
 const Track = require('../../models/track');
 
 const saveGeoJson = async (name, geoJson, event) => {
@@ -23,7 +25,7 @@ const saveGeoJson = async (name, geoJson, event) => {
   await files.create(event, metaData);
   await dropbox.upload(geoJson, filePath);
   return filePath;
-}
+};
 
 const getMetaData = async (geoJson) => {
   const { properties, geometry } = geoJson.features[0];
@@ -31,7 +33,7 @@ const getMetaData = async (geoJson) => {
   const { time, coordTimes } = properties;
   const points = {
     points: coordinates,
-  }
+  };
   const start = coordinates[0];
   const end = coordinates[coordinates.length - 1];
   const bounds = await coordinatesLib.geoLib(points, 'getBounds');
@@ -113,5 +115,15 @@ module.exports = async (event, message) => {
       url,
     }),
   };
-  await messages.create(messageObject, { foreignKey: trackId, app: 'messageQueue', event: message });
+  await messages.create(messageObject, {
+    foreignKey: trackId,
+    app: 'messageQueue',
+    event: message,
+  });
+  await tasks.create(messageObject, {
+    foreignKey: trackId,
+    app: 'messageQueue',
+    event: 'finish_track',
+    executionTime: dayjs().add(5, 'minute').format(),
+  });
 };

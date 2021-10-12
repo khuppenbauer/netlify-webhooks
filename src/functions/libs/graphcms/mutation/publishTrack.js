@@ -3,13 +3,14 @@ const { gql } = require('graphql-request');
 module.exports = async () => {
   return gql`
     mutation PublishTrack(
-      $name: String,  
+      $foreignKey: String,  
     ) {
       publishTrack(
-        where: { name: $name }
+        where: { foreignKey: $foreignKey }
       ) {
         id
         name
+        foreignKey
         stage
       }
     }  

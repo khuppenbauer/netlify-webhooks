@@ -14,6 +14,7 @@ module.exports = async () => {
       $elevHigh: Float,
       $startElevation: Float,
       $endElevation: Float,
+      $foreignKey: String,
       $minCoords: LocationInput,
       $maxCoords: LocationInput,
       $startCoords: LocationInput,
@@ -45,6 +46,7 @@ module.exports = async () => {
             totalElevationLoss: $totalElevationLoss,
             elevLow: $elevLow,
             elevHigh: $elevHigh,
+            foreignKey: $foreignKey,
             startElevation: $startElevation,
             endElevation: $endElevation,
             minCoords: $minCoords,
@@ -73,6 +75,7 @@ module.exports = async () => {
             totalElevationLoss: $totalElevationLoss,
             elevLow: $elevLow,
             elevHigh: $elevHigh,
+            foreignKey: $foreignKey,
             startElevation: $startElevation,
             endElevation: $endElevation,
             minCoords: $minCoords,
@@ -102,6 +105,7 @@ module.exports = async () => {
         totalElevationLoss
         elevLow
         elevHigh
+        foreignKey
         startElevation
         endElevation
         minCoords {

@@ -5,13 +5,13 @@ const Track = require('./models/track');
 
 const handler = async (event) => {
   if (event.httpMethod === 'POST') {
-    const { type } = event.queryStringParameters;
+    const { type, action } = event.queryStringParameters;
     const data = JSON.parse(event.body);
     let message;
     let res;
     if (type === 'track') {
-      message = 'add_track';
-      res = await graphcms.track(data);
+      message = `${action}_track`;
+      res = await graphcms.track(data, action);
     } else if (type === 'file') {
       res = await graphcms.asset(data);
       const { folder, extension, source, url } = res;

@@ -32,23 +32,14 @@ if (cdnUrl && cdnToken) {
   );
 }
 
-const publishTrack = async (name) => {
-  const mutation = await graphcmsMutation.publishTrack();
-  const mutationVariables = {
-    name,
-  };
-  return graphcms.request(mutation, mutationVariables);
-};
-
-module.exports = async (data) => {
-  const { track } = data;
-  const record = await Track.findById(track);
+const addTrack = async (record) => {
   const {
     minCoords,
     maxCoords,
     startCoords,
     endCoords,
     name,
+    _id: foreignKey,
   } = record;
   const query = await graphcmsQuery.getAssets('fileName_starts_with');
   const queryVariables = {
@@ -104,8 +95,28 @@ module.exports = async (data) => {
     gpxFileSmallUrl,
     geoJsonFileUrl,
     staticImageUrl,
+    foreignKey,
   };
-  const result = await graphcms.request(mutation, mutationVariables);
-  await publishTrack(name);
-  return result;
+  return graphcms.request(mutation, mutationVariables);
+};
+
+const publishTrack = async (track) => {
+  const mutation = await graphcmsMutation.publishTrack();
+  const mutationVariables = {
+    foreignKey: track,
+  };
+  return graphcms.request(mutation, mutationVariables);
+};
+
+module.exports = async (data, action) => {
+  if (action === 'add') {
+    const { track } = data;
+    const record = await Track.findById(track);
+    return addTrack(record);
+  }
+  if (action === 'publish') {
+    const { track } = data;
+    return publishTrack(track);
+  }
+  return null;
 };

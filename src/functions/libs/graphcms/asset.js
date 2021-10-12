@@ -151,14 +151,6 @@ const publishAsset = async (asset, record) => {
   return graphcms.request(mutation, mutationVariables);
 };
 
-const publishTrack = async (name) => {
-  const mutation = await graphcmsMutation.publishTrack();
-  const mutationVariables = {
-    name,
-  };
-  return graphcms.request(mutation, mutationVariables);
-};
-
 const updateTrack = async (asset, record, mutation, variable) => {
   const { source, dateTimeOriginal, coords } = record;
   if (source) {
@@ -169,7 +161,6 @@ const updateTrack = async (asset, record, mutation, variable) => {
         name: foreignKey,
       };
       await graphcms.request(mutation, mutationVariables);
-      await publishTrack(foreignKey);
     }
   }
   let tracks;
@@ -189,7 +180,6 @@ const updateTrack = async (asset, record, mutation, variable) => {
         name,
       };
       await graphcms.request(mutation, mutationVariables);
-      await publishTrack(name);
       return [...accum];
     }, Promise.resolve([]));
   }
