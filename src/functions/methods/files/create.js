@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
+const dayjs = require('dayjs');
 const db = require('../../database/mongodb');
 const File = require('../../models/file');
 const Message = require('../../models/message');
 const messages = require('../messages');
+const tasks = require('../tasks');
 
 module.exports = async (event, metaData, message) => {
   const existing = await File.find({ path_display: metaData.path_display });
@@ -32,6 +34,12 @@ module.exports = async (event, metaData, message) => {
     const existingMessage = await Message.find(messageData);
     if (existingMessage.length === 0) {
       await messages.create(messageObject, messageData);
+      await tasks.create(messageObject, {
+        foreignKey: metaData.path_display,
+        app: 'messageQueue',
+        event: 'geocoding_file',
+        executionTime: dayjs().add(3, 'minute').format(),
+      });
     }
   }
 };
