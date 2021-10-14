@@ -10,10 +10,11 @@ module.exports = async (event, metaData, message) => {
   const existing = await File.find({ path_display: metaData.path_display });
   const id = (existing.length === 0) ? mongoose.Types.ObjectId() : existing[0]._id;
 
+  let res;
   if (existing.length > 0) {
-    await File.findByIdAndUpdate(id, metaData);
+    res = await File.findByIdAndUpdate(id, metaData);
   } else {
-    await File.create(
+    res = await File.create(
       {
         status: 'new',
         _id: id,
@@ -24,7 +25,10 @@ module.exports = async (event, metaData, message) => {
   if (message) {
     const messageObject = {
       ...event,
-      body: JSON.stringify({ ...metaData, _id: id }),
+      body: JSON.stringify({
+        ...res._doc,
+        ...metaData,
+      }),
     };
     const messageData = {
       foreignKey: metaData.path_display,

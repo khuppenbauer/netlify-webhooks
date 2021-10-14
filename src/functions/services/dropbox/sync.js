@@ -16,6 +16,7 @@ const saveFile = async (event, message, data) => {
   const extension = mime.extension(mimeType);
   const isImage = mimeType.startsWith('image');
 
+  let metaData;
   let fileData;
   let imageData;
   let coordinate;
@@ -26,6 +27,9 @@ const saveFile = async (event, message, data) => {
     if (createExternalUrl) {
       externalUrl = await dropboxLib.link(id);
       fileData = await filesLib.data(externalUrl, 'binary');
+      metaData = {
+        externalUrl,
+      };
     } else {
       fileData = await dropboxLib.download(id, 'binary');
     }
@@ -64,13 +68,13 @@ const saveFile = async (event, message, data) => {
     .digest('hex');
 
   const { dir: folder, name: fileName } = path.parse(path_display);
-  let metaData = {
+  metaData = {
+    ...metaData,
     ...data,
     foreignKey: id,
     mimeType,
     extension,
     sha1,
-    externalUrl,
     folder,
     ...imageData,
     status: 'sync',

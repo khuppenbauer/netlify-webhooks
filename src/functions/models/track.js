@@ -103,6 +103,12 @@ const schema = new mongoose.Schema({
   geoJsonFileUrl: {
     type: String,
   },
+  overviewImage: {
+    type: String,
+  },
+  overviewImageUrl: {
+    type: String,
+  },
   geoJson: {
     type: Object,
   },

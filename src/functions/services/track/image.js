@@ -3,6 +3,7 @@ const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
 const dropbox = require('../dropbox');
+const mapboxLib = require('../../libs/mapbox');
 const messages = require('../../methods/messages');
 const files = require('../../methods/files');
 const Track = require('../../models/track');
@@ -10,12 +11,6 @@ const File = require('../../models/file');
 const request = require('../request');
 
 const gpsbabelBaseUrl = process.env.GPS_BABEL_FUNCTIONS_API_BASE_URL;
-const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
-const mapboxBaseUrl = 'https://api.mapbox.com/styles/v1/';
-const mapboxStyle = 'mapbox/satellite-streets-v11';
-const imageSize = '640x480';
-const stroke = '#ff3300';
-const strokeWidth = 3;
 
 const getGeoJson = async (gpxFile) => {
   const outtype = 'geojson';
@@ -50,57 +45,50 @@ const getGeoJson = async (gpxFile) => {
   return res.data;
 };
 
-const createImage = async (geoJson) => {
-  const geoJsonString = {
-    type: 'Feature',
-    properties: {
-      stroke,
-      'stroke-width': strokeWidth,
-    },
-    geometry: {
-      type: 'LineString',
-      coordinates: geoJson.features[0].geometry.coordinates,
-    },
-  };
-  const pathParams = [
-    mapboxStyle,
-    'static',
-    `geojson(${encodeURIComponent(JSON.stringify(geoJsonString))})`,
-    'auto',
-    imageSize,
-  ];
-  const url = `${mapboxBaseUrl}${pathParams.join('/')}?access_token=${mapboxApiAccessToken}`;
-  return axios
+const processImage = async (url, event, message, folder) => {
+  const body = JSON.parse(event.body);
+  const { name } = body;
+  const data = await axios
     .get(url, {
       responseType: 'arraybuffer',
     })
     .then((response) => Buffer.from(response.data, 'binary'));
-}
-
-module.exports = async (event, message) => {
-  const body = JSON.parse(event.body);
-  const { name, track, url } = body;
-  const geoJson = await getGeoJson(url);
-  const data = await createImage(geoJson);
   const { name: fileName } = path.parse(name);
   const { ext: extension } = await fileType.fromBuffer(data);
-  const filePath = `/preview/${fileName}.${extension}`;
+  const filePath = `/${folder}/${fileName}.${extension}`;
   const source = {
     name: 'mapbox',
     foreignKey: name,
-    type: 'staticImage',
+    type: `${folder}Image`,
   };
   const metaData = {
     name: `${fileName}.${extension}`,
     path_display: filePath,
     source,
-  }
+    externalUrl: url,
+  };
   await files.create(event, metaData);
   await dropbox.upload(data, filePath);
-  await Track.findByIdAndUpdate(track, { staticImage: filePath });
-  const messageObject = {
-    ...event,
-    body: JSON.stringify({ ...body, staticImage: filePath, path: filePath }),
-  };
-  await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
+  return filePath;
+};
+
+module.exports = async (event, message) => {
+  const body = JSON.parse(event.body);
+  const { track, url } = body;
+  const geoJson = await getGeoJson(url);
+  const staticImage = await mapboxLib.lineString(geoJson.features[0].geometry.coordinates);
+  const staticImagePath = await processImage(staticImage, event, message, 'preview');
+
+  const record = await Track.findById(track);
+  const { minCoords, maxCoords } = record;
+  const coords = [];
+  coords.push(minCoords);
+  coords.push(maxCoords);
+  const overviewImage = await mapboxLib.polygon(coords);
+  const overviewImagePath = await processImage(overviewImage, event, message, 'overview');
+
+  await Track.findByIdAndUpdate(track, {
+    staticImage: staticImagePath,
+    overviewImage: overviewImagePath,
+  });
 };

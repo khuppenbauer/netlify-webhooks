@@ -40,38 +40,16 @@ const addTrack = async (record) => {
     endCoords,
     name,
     _id: foreignKey,
+    gpxFileUrl,
+    gpxFileSmallUrl,
+    geoJsonFileUrl,
+    staticImageUrl,
+    overviewImageUrl,
   } = record;
   const query = await graphcmsQuery.getAssets('fileName_starts_with');
   const queryVariables = {
     value: name,
   };
-  let res;
-  if (cdn) {
-    res = await cdn.request(query, queryVariables);
-  } else {
-    res = await graphcms.request(query, queryVariables);
-  }
-  const { assets } = res;
-  let gpxFileUrl = '';
-  let gpxFileSmallUrl = '';
-  let geoJsonFileUrl = '';
-  let staticImageUrl = '';
-  assets.map((asset) => {
-    const { folder, extension, handle } = asset;
-    if (folder === '/tracks') {
-      if (extension === 'gpx') {
-        gpxFileUrl = `https://media.graphcms.com/${handle}`;
-      }
-      if (extension === 'json') {
-        geoJsonFileUrl = `https://media.graphcms.com/${handle}`;
-      }
-    } else if (folder === '/convert/gpx') {
-      gpxFileSmallUrl = `https://media.graphcms.com/${handle}`;
-    } else if (folder === '/preview') {
-      staticImageUrl = `https://media.graphcms.com/${handle}`;
-    }
-  });
-
   const mutation = await graphcmsMutation.upsertTrack();
   const mutationVariables = {
     ...record._doc,
@@ -95,6 +73,7 @@ const addTrack = async (record) => {
     gpxFileSmallUrl,
     geoJsonFileUrl,
     staticImageUrl,
+    overviewImageUrl,
     foreignKey,
   };
   return graphcms.request(mutation, mutationVariables);
