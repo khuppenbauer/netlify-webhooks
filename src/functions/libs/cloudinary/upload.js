@@ -16,11 +16,8 @@ module.exports = async (data) => {
     _id,
     externalUrl,
     path_display: pathDisplay,
-    mimeType,
-    folder,
   } = data;
-  const isImage = mimeType.startsWith('image');
-  if (isImage && folder === '/overview') {
+  if (externalUrl) {
     const { dir, name } = path.parse(pathDisplay);
     const publicId = `${dir.replace(/\//, '')}/${name}`;
     const res = await cloudinary.uploader.upload(externalUrl,
@@ -28,7 +25,7 @@ module.exports = async (data) => {
         public_id: publicId,
       });
     const { secure_url: secureUrl } = res;
-    await File.findByIdAndUpdate(_id, { url: secureUrl });
+    await File.findByIdAndUpdate(_id, { url: secureUrl, status: 'deployed' });
     return res;
   }
   return false;

@@ -30,18 +30,20 @@ module.exports = async (event, metaData, message) => {
         ...metaData,
       }),
     };
+    const eventPostfix = `${metaData.folder.replace('/', '').replace('/', '_')}`;
     const messageData = {
       foreignKey: metaData.path_display,
       app: 'messageQueue',
-      event: message,
+      event: `${message}_${eventPostfix}`,
     };
+    console.log(messageData);
     const existingMessage = await Message.find(messageData);
     if (existingMessage.length === 0) {
       await messages.create(messageObject, messageData);
       await tasks.create(messageObject, {
         foreignKey: metaData.path_display,
         app: 'messageQueue',
-        event: 'geocoding_file',
+        event: `geocoding_file_${eventPostfix}`,
         executionTime: dayjs().add(3, 'minute').format(),
       });
     }
