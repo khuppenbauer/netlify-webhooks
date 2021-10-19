@@ -88,6 +88,7 @@ module.exports = async (event, message) => {
   const overviewImagePath = await processImage(overviewImage, event, message, 'overview');
 
   await Track.findByIdAndUpdate(track, {
+    previewImage: staticImagePath,
     staticImage: staticImagePath,
     overviewImage: overviewImagePath,
   });

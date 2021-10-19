@@ -8,12 +8,18 @@ const handler = async (event) => {
     const message = 'upload_cloudinary_image';
     const data = JSON.parse(event.body);
     const { folder, source } = data;
-    if (folder === '/overview') {
+    if (folder === '/overview' || folder === '/preview') {
       const { foreignKey } = source;
       const res = await cloudinary.upload(data);
       const { secure_url: url } = res;
       const filter = { name: foreignKey };
-      await Track.findOneAndUpdate(filter, { overviewImageUrl: url });
+      let update;
+      if (folder === '/preview') {
+        update = { staticImageUrl: url };
+      } else if (folder === '/overview') {
+        update = { overviewImageUrl: url };
+      }
+      await Track.findOneAndUpdate(filter, update);
       if (res) {
         const messageObject = {
           ...event,
