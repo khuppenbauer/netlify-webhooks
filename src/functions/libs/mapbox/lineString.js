@@ -3,9 +3,9 @@ const dotenv = require('dotenv').config();
 const mapboxApiAccessToken = process.env.MAPBOX_API_ACCESS_TOKEN;
 const mapboxBaseUrl = 'https://api.mapbox.com/styles/v1/';
 const mapboxStyle = 'mapbox/satellite-streets-v11';
-const imageSize = '640x480';
+const imageSize = '320x240';
 const stroke = '#ff3300';
-const strokeWidth = 3;
+const strokeWidth = 2;
 
 module.exports = async (coords) => {
   const geoJsonString = {
@@ -26,5 +26,5 @@ module.exports = async (coords) => {
     'auto',
     imageSize,
   ];
-  return `${mapboxBaseUrl}${pathParams.join('/')}?access_token=${mapboxApiAccessToken}`;
+  return `${mapboxBaseUrl}${pathParams.join('/')}?padding=50&access_token=${mapboxApiAccessToken}`;
 };
