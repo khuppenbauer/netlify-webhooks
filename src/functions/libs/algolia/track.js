@@ -28,6 +28,8 @@ module.exports = async (data) => {
     endState,
     endCountry,
     staticImageUrl,
+    previewImageUrl,
+    overviewImageUrl,
     geoJson,
   } = record;
   const { geometry } = geoJson.features[0];
@@ -53,6 +55,8 @@ module.exports = async (data) => {
     endState,
     endCountry,
     staticImageUrl,
+    previewImageUrl,
+    overviewImageUrl,
     _geoloc: geoLoc,
   };
   let hierarchicalCategories = {};
