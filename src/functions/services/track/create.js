@@ -124,12 +124,12 @@ module.exports = async (event, message) => {
     foreignKey: trackId,
     app: 'messageQueue',
     event: 'update_track',
-    executionTime: dayjs().add(4, 'minute').format(),
+    executionTime: dayjs().add(5, 'minute').format(),
   });
   await tasks.create(messageObject, {
     foreignKey: trackId,
     app: 'messageQueue',
     event: 'finish_track',
-    executionTime: dayjs().add(5, 'minute').format(),
+    executionTime: dayjs().add(7, 'minute').format(),
   });
 };
