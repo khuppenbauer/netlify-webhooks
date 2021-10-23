@@ -76,8 +76,8 @@ module.exports = async (event, message) => {
   const body = JSON.parse(event.body);
   const { track, url } = body;
   const geoJson = await getGeoJson(url);
-  const staticImage = await mapboxLib.lineString(geoJson.features[0].geometry.coordinates);
-  const staticImagePath = await processImage(staticImage, event, message, 'preview');
+  const previewImage = await mapboxLib.lineString(geoJson.features[0].geometry.coordinates);
+  const previewImagePath = await processImage(previewImage, event, message, 'preview');
 
   const record = await Track.findById(track);
   const { minCoords, maxCoords } = record;
@@ -88,8 +88,7 @@ module.exports = async (event, message) => {
   const overviewImagePath = await processImage(overviewImage, event, message, 'overview');
 
   await Track.findByIdAndUpdate(track, {
-    previewImage: staticImagePath,
-    staticImage: staticImagePath,
+    previewImage: previewImagePath,
     overviewImage: overviewImagePath,
   });
 };
