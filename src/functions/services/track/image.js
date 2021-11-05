@@ -76,7 +76,8 @@ module.exports = async (event, message) => {
   const body = JSON.parse(event.body);
   const { track, url } = body;
   const geoJson = await getGeoJson(url);
-  const previewImage = await mapboxLib.lineString(geoJson.features[0].geometry.coordinates);
+  const lineString = geoJson.features.filter((feature) => feature.geometry.type === 'LineString');
+  const previewImage = await mapboxLib.lineString(lineString[0].geometry.coordinates);
   const previewImagePath = await processImage(previewImage, event, message, 'preview');
 
   const record = await Track.findById(track);

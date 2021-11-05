@@ -86,7 +86,14 @@ module.exports = async (event, message) => {
   const data = JSON.parse(event.body);
   const { path_display: pathDisplay, url } = data;
   const { name } = path.parse(pathDisplay);
-  const geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data, 'track');
+  let geoJson = await coordinatesLib.toGeoJson(await (await axios.get(url)).data, 'track');
+  const lineString = geoJson.features.filter((feature) => feature.geometry.type === 'LineString');
+  if (lineString.length === 1) {
+    geoJson = {
+      features: lineString,
+      type: 'FeatureCollection',
+    };
+  }
   const metaData = await getMetaData(geoJson);
   const geoJsonFile = await saveGeoJson(name, geoJson, event);
   const existingTrack = await Track.find({
