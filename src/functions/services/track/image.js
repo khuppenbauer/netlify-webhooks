@@ -2,6 +2,7 @@ const dotenv = require('dotenv').config();
 const path = require('path');
 const fileType = require('file-type');
 const axios = require('axios');
+const geolib = require('geolib');
 const dropbox = require('../dropbox');
 const mapboxLib = require('../../libs/mapbox');
 const messages = require('../../methods/messages');
@@ -76,8 +77,14 @@ module.exports = async (event, message) => {
   const body = JSON.parse(event.body);
   const { track, url } = body;
   const geoJson = await getGeoJson(url);
-  const lineString = geoJson.features.filter((feature) => feature.geometry.type === 'LineString');
-  const previewImage = await mapboxLib.lineString(lineString[0].geometry.coordinates);
+  const geoJsonFeature = geoJson.features
+    .filter((feature) => feature.geometry.type === 'LineString')
+    .reduce((prev, current) => {
+      const prevDistance = prev ? geolib.getPathLength(prev.geometry.coordinates) : 0;
+      const currentDistance = current ? geolib.getPathLength(current.geometry.coordinates) : 0;
+      return (prevDistance > currentDistance) ? prev : current;
+    });
+  const previewImage = await mapboxLib.lineString(geoJsonFeature.geometry.coordinates);
   const previewImagePath = await processImage(previewImage, event, message, 'preview');
 
   const record = await Track.findById(track);

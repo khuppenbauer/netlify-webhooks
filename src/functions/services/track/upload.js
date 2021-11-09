@@ -1,12 +1,26 @@
 const dotenv = require('dotenv').config();
 const path = require('path');
 const mime = require('mime-types');
+const geolib = require('geolib');
 const dropbox = require('../dropbox');
 const coordinatesLib = require('../../libs/coordinates');
 const features = require('../../methods/features');
 const files = require('../../methods/files');
 const messages = require('../../methods/messages');
 const Track = require('../../models/track');
+
+const colors = [
+  '#9e0142',
+  '#d53e4f',
+  '#f46d43',
+  '#fdae61',
+  '#fee08b',
+  '#e6f598',
+  '#abdda4',
+  '#66c2a5',
+  '#3288bd',
+  '#5e4fa2',
+];
 
 const getPath = async (fileName, outtype) => {
   const mimeType = mime.lookup(`${fileName}.${outtype}`);
@@ -86,19 +100,31 @@ module.exports = async (event, message) => {
   const fileName = `${name}_${count}_${distance}${error}`;
   const filePath = await getPath(fileName, outtype);
   const { base } = path.parse(filePath);
-  let geoJson = await coordinatesLib.toGeoJson(content, 'track');
-  const lineString = geoJson.features.filter((feature) => feature.geometry.type === 'LineString');
-  if (lineString.length === 1) {
-    geoJson = {
-      features: lineString,
-      type: 'FeatureCollection',
-    };
-  }
-  const { geometry } = geoJson.features[0];
+  const geoJsonTrack = await coordinatesLib.toGeoJson(content, 'track');
+  const geoJsonFeatures = geoJsonTrack.features
+    .filter((feature) => feature.geometry.type === 'LineString')
+    .map((featureItem, index) => {
+      featureItem.properties.color = colors[index];
+      return featureItem;
+    });
+  const geoJson = {
+    features: geoJsonFeatures,
+    type: 'FeatureCollection',
+  };
+  const geoJsonFeature = geoJsonFeatures.reduce((prev, current, index) => {
+    current.index = index;
+    const prevDistance = prev ? geolib.getPathLength(prev.geometry.coordinates) : 0;
+    const currentDistance = current ? geolib.getPathLength(current.geometry.coordinates) : 0;
+    return (prevDistance > currentDistance) ? prev : current;
+  });
+  const index = geoJsonFeature.index || 0;
+  geoJson.features[index].properties.color = 'red';
+
+  const { geometry } = geoJsonFeature;
   const { coordinates } = geometry;
   const elevation = await coordinatesLib.elevation(coordinates);
   const existingTrack = await Track.findById(track);
-  const feature = await createFeature(event, existingTrack, geoJson);
+  await createFeature(event, existingTrack, geoJson);
   const source = {
     name: 'gpsbabel',
     foreignKey: name,
