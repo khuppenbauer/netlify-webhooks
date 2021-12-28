@@ -25,6 +25,9 @@ const schema = new mongoose.Schema({
   geoJson: {
     type: Object,
   },
+  geometry: {
+    type: Object,
+  },
   city: {
     type: String,
   },

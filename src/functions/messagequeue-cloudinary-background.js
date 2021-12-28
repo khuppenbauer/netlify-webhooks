@@ -1,6 +1,8 @@
 const Track = require('./models/track');
+const Feature = require('./models/feature');
 const sentry = require('./libs/sentry');
 const messages = require('./methods/messages');
+const features = require('./methods/features');
 const cloudinary = require('./libs/cloudinary');
 
 const handler = async (event) => {
@@ -22,6 +24,16 @@ const handler = async (event) => {
     }
     if (update) {
       await Track.findByIdAndUpdate(trackId, update);
+      const feature = await Feature.findOne({ foreignKey: trackId });
+      const { _id, meta: metaData } = feature;
+      const meta = {
+        ...metaData,
+        ...update,
+      };
+      const featureObject = {
+        body: JSON.stringify({ ...feature, meta }),
+      };
+      await features.update(featureObject, _id);
     }
     if (res) {
       const messageObject = {

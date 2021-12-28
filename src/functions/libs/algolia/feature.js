@@ -44,46 +44,12 @@ module.exports = async (data) => {
     meta,
     _geoloc: geoLoc,
   };
-  let hierarchicalCategories = {};
-  const {
-    startCity, startState, startCountry, endCity, endState, endCountry,
-  } = meta;
-  if (startCity && startState && startCountry && endCity && endCountry && endState) {
-    hierarchicalCategories = {
-      'hierarchicalCategories.lvl0': [
-        startCountry,
-        endCountry,
-      ],
-      'hierarchicalCategories.lvl1': [
-        `${startCountry} > ${startState}`,
-        `${endCountry} > ${endState}`,
-      ],
-      'hierarchicalCategories.lvl2': [
-        `${startCountry} > ${startState} > ${startCity}`,
-        `${endCountry} > ${endState} > ${endCity}`,
-      ],
-    };
-  }
   await index
     .setSettings({
       attributesForFaceting: [
-        'searchable(hierarchicalCategories)',
-        'searchable(hierarchicalCategories.lvl0)',
-        'searchable(hierarchicalCategories.lvl1)',
-        'searchable(hierarchicalCategories.lvl2)',
         'searchable(type)',
       ],
       searchableAttributes: [
-        'city',
-        'country',
-        'state',
-        'meta.startCity',
-        'meta.startState',
-        'meta.startCountry',
-        'meta.endCity',
-        'meta.endState',
-        'meta.endCountry',
-        'name',
         'type',
       ],
     })
@@ -93,7 +59,6 @@ module.exports = async (data) => {
   await index
     .saveObject({
       ...object,
-      ...hierarchicalCategories,
     })
     .then(({ objectID }) => {
       console.log(objectID);
