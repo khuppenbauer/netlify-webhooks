@@ -145,14 +145,16 @@ module.exports = async (event, message) => {
     ...metaData,
     geoJsonFile,
   };
+  let trackObject;
   if (existingTrack.length === 0) {
-    await Track.create(track);
+    trackObject = await Track.create(track);
   } else {
-    await Track.findByIdAndUpdate(trackId, track);
+    trackObject = await Track.findByIdAndUpdate(trackId, track);
   }
   const messageObject = {
     ...event,
     body: JSON.stringify({
+      ...trackObject._doc,
       name,
       gpxFile: pathDisplay,
       track: trackId,

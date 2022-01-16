@@ -10,15 +10,15 @@ module.exports = async (event, id) => {
   const { foreignKey, source, type } = feature;
 
   try {
-    await Feature.findByIdAndUpdate(id, feature);
+    const res = await Feature.findByIdAndUpdate(id, feature);
     const messageObject = {
       ...event,
-      body: JSON.stringify({ feature: id }),
+      body: JSON.stringify(res),
     };
     const messageData = {
       foreignKey,
       app: 'messageQueue',
-      event: `create_${source}_${type}_feature`,
+      event: `update_${source}_${type}_feature`,
     };
     await messages.create(messageObject, messageData);
   } catch (err) {

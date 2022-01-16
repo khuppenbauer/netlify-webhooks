@@ -141,10 +141,13 @@ module.exports = async (event, message) => {
     geoJson,
     ...elevation,
   };
-  await Track.findByIdAndUpdate(track, trackData);
+  const trackObject = await Track.findByIdAndUpdate(track, trackData);
   const messageObject = {
     ...event,
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      ...trackObject._doc,
+      ...body,
+    }),
   };
   await messages.create(messageObject, { foreignKey: track, app: 'messageQueue', event: message });
   await files.create(event, metaData);
