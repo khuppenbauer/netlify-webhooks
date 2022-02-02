@@ -31,6 +31,7 @@ const handler = async (event) => {
         ...update,
       };
       const featureObject = {
+        ...event,
         body: JSON.stringify({ ...feature._doc, meta }),
       };
       await features.update(featureObject, _id);

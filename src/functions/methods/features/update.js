@@ -10,10 +10,10 @@ module.exports = async (event, id) => {
   const { foreignKey, source, type } = feature;
 
   try {
-    const res = await Feature.findByIdAndUpdate(id, feature);
+    await Feature.findByIdAndUpdate(id, feature);
     const messageObject = {
       ...event,
-      body: JSON.stringify(res),
+      body: JSON.stringify({ _id: id }),
     };
     const messageData = {
       foreignKey,
@@ -22,6 +22,7 @@ module.exports = async (event, id) => {
     };
     await messages.create(messageObject, messageData);
   } catch (err) {
+    console.log(err);
     return {
       statusCode: 400,
       headers: {
