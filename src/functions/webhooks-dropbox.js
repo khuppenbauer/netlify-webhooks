@@ -18,7 +18,7 @@ exports.handler = async (event) => {
     const VERIFY_SIGNATURE = process.env.DROPBOX_SIGNATURE;
     const signature = event.headers['x-dropbox-signature'];
     if (VERIFY_SIGNATURE === signature) {
-      const foreignKey = event.headers['x-bb-client-request-uuid'].slice(0, 36);
+      const foreignKey = event.headers['x-nf-request-id'];
       await logs.create(event, { startTime, status: 200 });
       return messages.create(event, { foreignKey, app: 'dropbox', event: 'changes' });
     }
