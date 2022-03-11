@@ -10,6 +10,12 @@ const schema = new mongoose.Schema({
   name: {
     type: String,
   },
+  title: {
+    type: String,
+  },
+  slug: {
+    type: String,
+  },
   date: {
     type: Date,
   },

@@ -63,6 +63,8 @@ const createFeature = async (event, track, geoJson) => {
     state,
     country,
     meta: {
+      title: geoJson.features[0].properties.name.trim(),
+      slug: name.toLowerCase(),
       date,
       startCity: city,
       startState: state,

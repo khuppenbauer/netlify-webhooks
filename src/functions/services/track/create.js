@@ -139,6 +139,8 @@ module.exports = async (event, message) => {
   const trackId = (existingTrack.length === 0) ? mongoose.Types.ObjectId() : existingTrack[0]._id;
   const track = {
     name,
+    title: features[0].properties.name.trim(),
+    slug: name.toLowerCase(),
     gpxFile: pathDisplay,
     gpxFileUrl: url,
     _id: trackId,
