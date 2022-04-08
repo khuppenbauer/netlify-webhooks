@@ -16,10 +16,9 @@ const addActivity = async (activityData) => {
     elev_low,
     elev_high,
     total_elevation_gain,
-    start_latitude: latitude,
-    start_longitude: longitude,
+    start_latlng,
   } = activityData;
-  const location = await coordinatesLib.location(latitude, longitude);
+  const location = await coordinatesLib.location(start_latlng[0], start_latlng[1]);
   const { city, state, country } = location;
   const activity = {
     name,

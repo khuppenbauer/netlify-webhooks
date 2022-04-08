@@ -63,10 +63,9 @@ const processActivity = async (event, foreignKey) => {
   const {
     name,
     start_date: startTime,
-    start_latitude: latitude,
-    start_longitude: longitude,
+    start_latlng,
   } = activityData;
-  const location = await coordinatesLib.location(latitude, longitude);
+  const location = await coordinatesLib.location(start_latlng[0], start_latlng[1]);
   const { city, state, country } = location;
   const url = `activities/${foreignKey}/streams/latlng,altitude,time?key_by_type=true`;
   const stream = await stravaLib.api(url);
