@@ -25,7 +25,7 @@
     "dayjs": "^1.9.6",
     "dotenv": "^8.2.0",
     "exifr": "^6.0.0",
-    "file-type": "^15.0.0",
+    "file-type": "^16.5.4",
     "form-data": "^4.0.0",
     "fs": "^0.0.1-security",
     "geolib": "^3.3.1",
